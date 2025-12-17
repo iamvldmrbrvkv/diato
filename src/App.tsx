@@ -240,11 +240,22 @@ export function App() {
                     gap: 0.5,
                     '& .MuiToggleButton-root': {
                       border: '1px solid',
-                      borderColor: 'divider'
+                      borderColor: 'divider',
+                      transition: 'all 150ms',
                     },
-                    '& .MuiToggleButton-root:hover, & .MuiToggleButton-root.Mui-selected': {
+                    '& .MuiToggleButton-root.Mui-selected': {
+                      bgcolor: 'primary.main',
+                      color: 'primary.contrastText',
                       borderColor: 'primary.light',
-                      zIndex: 1
+                      borderWidth: 2,
+                      boxShadow: 3,
+                      zIndex: 2,
+                    },
+                    '& .MuiToggleButton-root.Mui-selected:hover': {
+                      bgcolor: 'primary.main',
+                    },
+                    '& .MuiToggleButton-root:hover': {
+                      borderColor: 'primary.light',
                     }
                   }}
                 >

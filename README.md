@@ -1,6 +1,6 @@
-# [Diato](https://diato-explorer.vercel.app/)
+# Diato
 
-Diato is a small React + TypeScript web app for exploring diatonic triads and
+[Diato](https://diato-explorer.vercel.app/) is a small React + TypeScript web app for exploring diatonic triads and
 discovering which major/minor keys contain a given set of chords. The app is designed
 for music students, hobbyists, and composers who want a lightweight interactive tool
 for learning harmony or experimenting with chord choices while composing.
