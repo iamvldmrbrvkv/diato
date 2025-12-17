@@ -182,8 +182,16 @@ export function App() {
                   }
                 }}
               >
-                <ToggleButton value="key" sx={{ flex: 1, minWidth: 0 }}>By Key</ToggleButton>
-                <ToggleButton value="free" sx={{ flex: 1, minWidth: 0 }}>Free</ToggleButton>
+                <ToggleButton value="key" sx={{ flex: 1, minWidth: 0 }}>
+                  <Tooltip title="By Key — choose a tonic and mode to display that key's diatonic triads." arrow>
+                    <span style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>By Key</span>
+                  </Tooltip>
+                </ToggleButton>
+                <ToggleButton value="free" sx={{ flex: 1, minWidth: 0 }}>
+                  <Tooltip title="Free — browse all triads and select any combination to analyze." arrow>
+                    <span style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>Free</span>
+                  </Tooltip>
+                </ToggleButton>
               </ToggleButtonGroup>
               {viewMode === 'key' && (
                 <ToggleButtonGroup
@@ -205,8 +213,16 @@ export function App() {
                     }
                   }}
                 >
-                  <ToggleButton value="Ionian" sx={{ flex: 1, minWidth: 0 }}>Major</ToggleButton>
-                  <ToggleButton value="Aeolian" sx={{ flex: 1, minWidth: 0 }}>Minor</ToggleButton>
+                  <ToggleButton value="Ionian" sx={{ flex: 1, minWidth: 0 }}>
+                    <Tooltip title="Major (Ionian) — show diatonic triads in the major scale." arrow>
+                      <span style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>Major</span>
+                    </Tooltip>
+                  </ToggleButton>
+                  <ToggleButton value="Aeolian" sx={{ flex: 1, minWidth: 0 }}>
+                    <Tooltip title="Minor (Aeolian) — show diatonic triads in the natural minor scale." arrow>
+                      <span style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>Minor</span>
+                    </Tooltip>
+                  </ToggleButton>
                 </ToggleButtonGroup>
               )}
               {viewMode === 'key' && (
@@ -231,8 +247,12 @@ export function App() {
                     }
                   }}
                 >
-                  {(['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'] as Note[]).map(note => (
-                    <ToggleButton key={note} value={note} sx={{ flex: 1, minWidth: 0, mb: 0.5 }}>{note}</ToggleButton>
+                    {(['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'] as Note[]).map(note => (
+                    <ToggleButton key={note} value={note} sx={{ flex: 1, minWidth: 0, mb: 0.5 }}>
+                      <Tooltip title={`Show diatonic triads for ${note}`} arrow>
+                        <span style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>{note}</span>
+                      </Tooltip>
+                    </ToggleButton>
                   ))}
                 </ToggleButtonGroup>
               )}
