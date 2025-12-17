@@ -1,6 +1,10 @@
 
-import { useMemo, useState, type MouseEvent } from 'react';
-import { ThemeProvider, CssBaseline, createTheme, useMediaQuery, Container, Typography, Box, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import { useMemo, useState, useEffect, type MouseEvent } from 'react';
+import { ThemeProvider, CssBaseline, createTheme, useMediaQuery, Container, Typography, Box, ToggleButton, ToggleButtonGroup, Tooltip, IconButton } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import ComputerIcon from '@mui/icons-material/Computer';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import type { Note, Mode, Chord } from './music/types';
 import { buildDiatonicChords, buildAllTriads, findMatchingKeys } from './music/logic';
 import { ChordSelectorCircle } from './components/ChordSelectorCircle';
@@ -11,10 +15,26 @@ import { KeyResults } from './components/KeyResults';
  * Main application component: chord selection, analysis, and results display
  */
 export function App() {
-  // Dark theme by default, supports system preference
+  // Theme preference: 'system' | 'light' | 'dark'
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = useState<'dark' | 'light'>(prefersDark ? 'dark' : 'light');
-  const theme = useMemo(() => createTheme({ palette: { mode } }), [mode]);
+  const [themePref, setThemePref] = useState<'system' | 'light' | 'dark'>(() => {
+    try {
+      const v = localStorage.getItem('diato.theme');
+      return (v as 'system' | 'light' | 'dark') || 'system';
+    } catch {
+      return 'system';
+    }
+  });
+  const effectiveMode = themePref === 'system' ? (prefersDark ? 'dark' : 'light') : themePref;
+  const theme = useMemo(() => createTheme({ palette: { mode: effectiveMode } }), [effectiveMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('diato.theme', themePref);
+    } catch {
+      /* ignore */
+    }
+  }, [themePref]);
 
   // Selected chords state
   const [selectedChords, setSelectedChords] = useState<Chord[]>([]);
@@ -35,8 +55,14 @@ export function App() {
   // Reset selection
   const handleReset = () => setSelectedChords([]);
 
-  // Toggle theme
-  const handleThemeToggle = () => setMode(m => (m === 'dark' ? 'light' : 'dark'));
+  // Cycle theme preference: system -> light -> dark -> system
+  const handleCycleClick = () => {
+    setThemePref(p => {
+      if (p === 'system') return 'light';
+      if (p === 'light') return 'dark';
+      return 'system';
+    });
+  };
 
   // Change mode/tonic for the circle
   const handleSelectorMode = (_: MouseEvent<HTMLElement>, value: Mode | null) => {
@@ -54,64 +80,163 @@ export function App() {
           <Typography variant="h5" fontWeight={700}>
             Diatonic Harmony
           </Typography>
-          <Tooltip
-            title={mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            arrow
-          >
-            <span
-              style={{ fontSize: 28, display: 'inline-block', lineHeight: 1, cursor: 'pointer' }}
-              tabIndex={0}
-              role="button"
-              aria-label={mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              onClick={handleThemeToggle}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') handleThemeToggle();
-              }}
+          <Box display="flex" alignItems="center">
+            <Tooltip
+              title={
+                <Box sx={{ maxWidth: 340 }}>
+                  <Typography variant="body2">
+                    About this app: Select triads (three-note chords) by clicking the circular chord nodes
+                    or table entries to discover all major and minor keys where those chords occur diatonically.
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    <strong>Modes:</strong> <em>By Key</em> — choose a tonic and mode to display that key's
+                    diatonic triads; <em>Free</em> — browse all triads and select any combination.
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    Use the toggles to switch views. Click a chord to toggle selection; selected chords appear in
+                    the results showing matching keys and remaining available diatonic chords. Use the reset control
+                    to clear your selections.
+                  </Typography>
+                </Box>
+              }
+              arrow
             >
-              {mode === 'dark' ? '☀️' : '🌙'}
-            </span>
-          </Tooltip>
+              <IconButton
+                aria-label="Help"
+                sx={{
+                  color: 'text.secondary',
+                  mr: 1,
+                  p: 0,
+                  minWidth: 'auto',
+                  fontSize: 28,
+                  lineHeight: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <HelpOutlineIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              title={
+                themePref === 'system'
+                  ? (effectiveMode === 'dark'
+                      ? `System theme: dark (click to choose light)`
+                      : `System theme: light (click to choose dark)`)
+                  : themePref === 'light'
+                  ? 'Light theme (click to switch to dark)'
+                  : 'Dark theme (click to switch to system)'
+              }
+              arrow
+            >
+              <IconButton
+                aria-label={
+                  themePref === 'system'
+                    ? 'System theme'
+                    : themePref === 'light'
+                    ? 'Light theme'
+                    : 'Dark theme'
+                }
+                onClick={handleCycleClick}
+                sx={{
+                  color: 'inherit',
+                  p: 0,
+                  minWidth: 'auto',
+                  fontSize: 28,
+                  lineHeight: 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {themePref === 'system' ? (
+                  <ComputerIcon fontSize="inherit" />
+                ) : themePref === 'light' ? (
+                  <LightModeIcon fontSize="inherit" />
+                ) : (
+                  <DarkModeIcon fontSize="inherit" />
+                )}
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
         <Box mb={2}>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(_: React.MouseEvent<HTMLElement>, v: 'key' | 'free' | null) => v && setViewMode(v)}
-            size="small"
-            fullWidth
-            sx={{ mb: 1, width: '100%' }}
-          >
-            <ToggleButton value="key" sx={{ flex: 1, minWidth: 0 }}>By Key</ToggleButton>
-            <ToggleButton value="free" sx={{ flex: 1, minWidth: 0 }}>Free</ToggleButton>
-          </ToggleButtonGroup>
-          {viewMode === 'key' && (
-            <ToggleButtonGroup
-              value={selectorMode}
-              exclusive
-              onChange={handleSelectorMode}
-              size="small"
-              fullWidth
-              sx={{ mb: 1, width: '100%' }}
-            >
-              <ToggleButton value="Ionian" sx={{ flex: 1, minWidth: 0 }}>Major</ToggleButton>
-              <ToggleButton value="Aeolian" sx={{ flex: 1, minWidth: 0 }}>Minor</ToggleButton>
-            </ToggleButtonGroup>
-          )}
-          {viewMode === 'key' && (
-            <ToggleButtonGroup
-              value={selectorTonic}
-              exclusive
-              onChange={handleSelectorTonic}
-              size="small"
-              fullWidth
-              sx={{ flexWrap: 'wrap', width: '100%' }}
-            >
-              {(['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'] as Note[]).map(note => (
-                <ToggleButton key={note} value={note} sx={{ flex: 1, minWidth: 0 }}>{note}</ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          )}
-        </Box>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_: React.MouseEvent<HTMLElement>, v: 'key' | 'free' | null) => v && setViewMode(v)}
+                size="small"
+                fullWidth
+                sx={{
+                  mb: 1,
+                  width: '100%',
+                  '& .MuiToggleButton-root': {
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    transition: 'border-color 150ms, box-shadow 150ms',
+                  },
+                  '& .MuiToggleButton-root:hover, & .MuiToggleButton-root.Mui-selected': {
+                    borderColor: 'primary.light',
+                    zIndex: 1,
+                  }
+                }}
+              >
+                <ToggleButton value="key" sx={{ flex: 1, minWidth: 0 }}>By Key</ToggleButton>
+                <ToggleButton value="free" sx={{ flex: 1, minWidth: 0 }}>Free</ToggleButton>
+              </ToggleButtonGroup>
+              {viewMode === 'key' && (
+                <ToggleButtonGroup
+                  value={selectorMode}
+                  exclusive
+                  onChange={handleSelectorMode}
+                  size="small"
+                  fullWidth
+                  sx={{
+                    mb: 1,
+                    width: '100%',
+                    '& .MuiToggleButton-root': {
+                      border: '1px solid',
+                      borderColor: 'divider'
+                    },
+                    '& .MuiToggleButton-root:hover, & .MuiToggleButton-root.Mui-selected': {
+                      borderColor: 'primary.light',
+                      zIndex: 1
+                    }
+                  }}
+                >
+                  <ToggleButton value="Ionian" sx={{ flex: 1, minWidth: 0 }}>Major</ToggleButton>
+                  <ToggleButton value="Aeolian" sx={{ flex: 1, minWidth: 0 }}>Minor</ToggleButton>
+                </ToggleButtonGroup>
+              )}
+              {viewMode === 'key' && (
+                <ToggleButtonGroup
+                  value={selectorTonic}
+                  exclusive
+                  onChange={handleSelectorTonic}
+                  size="small"
+                  fullWidth
+                  sx={{
+                    flexWrap: 'wrap',
+                    width: '100%',
+                    mb: 1,
+                    gap: 0.5,
+                    '& .MuiToggleButton-root': {
+                      border: '1px solid',
+                      borderColor: 'divider'
+                    },
+                    '& .MuiToggleButton-root:hover, & .MuiToggleButton-root.Mui-selected': {
+                      borderColor: 'primary.light',
+                      zIndex: 1
+                    }
+                  }}
+                >
+                  {(['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'] as Note[]).map(note => (
+                    <ToggleButton key={note} value={note} sx={{ flex: 1, minWidth: 0, mb: 0.5 }}>{note}</ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              )}
+            </Box>
         {viewMode === 'key' ? (
           <ChordSelectorCircle
             diatonicChords={diatonicChords}

@@ -84,6 +84,9 @@ export function ChordSelectorCircle({
               '&:hover, &:focus, &:active': {
                 bgcolor: selected ? theme.palette.primary.main : theme.palette.background.paper,
                 color: selected ? theme.palette.primary.contrastText : theme.palette.text.primary,
+                borderColor: theme.palette.primary.light,
+                boxShadow: 3,
+                zIndex: rings - ringIndex + 1,
               },
               WebkitTapHighlightColor: 'transparent',
               touchAction: 'manipulation',
