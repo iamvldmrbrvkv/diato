@@ -1,4 +1,5 @@
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import type { Chord, Key } from '../music/types';
 
 /**
@@ -33,19 +34,21 @@ export function KeyResults({ results }: KeyResultsProps) {
           {results.map(({ key, availableChords }, idx) => (
             <Card key={idx} variant="outlined" sx={{ bgcolor: 'background.paper' }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  🔑 {formatKeyName(key)}
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <MusicNoteIcon fontSize="small" />
+                  {formatKeyName(key)}
                 </Typography>
-                <Typography variant="subtitle2" color="text.secondary">
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
                   Available chords:
                 </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ columnGap: 1, rowGap: 1 }}>
                   {availableChords.map((chord, i) => (
                     <Chip
                       key={i}
                       label={`${chord.root}${chord.quality === 'major' ? '' : chord.quality === 'minor' ? 'm' : 'dim'} (${chord.degree})`}
                       color="default"
                       size="small"
+                      sx={{ cursor: 'default', m: 0.25 }}
                     />
                   ))}
                 </Stack>
