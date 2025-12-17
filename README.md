@@ -1,75 +1,50 @@
-# React + TypeScript + Vite
+# [Diato](https://diato-explorer.vercel.app/)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Diato is a small React + TypeScript web app for exploring diatonic triads and
+discovering which major/minor keys contain a given set of chords. The app is designed
+for music students, hobbyists, and composers who want a lightweight interactive tool
+for learning harmony or experimenting with chord choices while composing.
 
-Currently, two official plugins are available:
+## Why this app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Interactive: select chords visually (circle or table) and instantly see matching keys.
+- Educational: exposes diatonic triads for each key and highlights remaining available chords.
+- Lightweight: runs locally with Vite, no server required — great for quick study or sketching ideas.
 
-## React Compiler
+## Core features
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- Browse all triads or focus "By Key" (select tonic + mode).
+- Select multiple chords to find all keys where those chords are diatonic.
+- Persistent theme preference (system / light / dark) saved to `localStorage`.
+- Tooltips and accessible controls for keyboard + mouse use.
 
-Note: This will impact Vite dev & build performances.
+## How to use
 
-## Expanding the ESLint configuration
+1. Install dependencies and start the dev server:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Open the site shown by Vite (usually http://localhost:5173).
+3. Use the top toggles:
+   - "By Key": pick a tonic and mode to show that key's diatonic triads.
+   - "Free": browse all triads and select any combination.
+4. Click a chord to toggle it in the selection. The results list shows matched keys
+   and available chords remaining in each matched key.
+5. Use the theme icon in the header to cycle between system / light / dark modes.
 
+## Intended audience
+
+- Students learning diatonic harmony and roman numeral analysis.
+- Composers or songwriters who want a quick reference to which keys contain selected chords.
+
+## Contributing
+
+- Open a PR with improvements, bug fixes, or additional modes (e.g., Dorian, Mixolydian).
+
+## License
+
+- MIT
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```

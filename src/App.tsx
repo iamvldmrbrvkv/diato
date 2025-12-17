@@ -76,10 +76,11 @@ export function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="sm" sx={{ minHeight: '100vh', py: 2 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h5" fontWeight={700}>
-            Diatonic Harmony
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} sx={{ position: 'relative' }}>
+          <Typography variant="h5" fontWeight={700} sx={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+            Diato
           </Typography>
+          <Box sx={{ flex: 1 }} />
           <Box display="flex" alignItems="center">
             <Tooltip
               title={
