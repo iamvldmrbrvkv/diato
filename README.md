@@ -11,12 +11,16 @@ for learning harmony or experimenting with chord choices while composing.
 - Educational: exposes diatonic triads for each key and highlights remaining available chords.
 - Lightweight: runs locally with Vite, no server required — great for quick study or sketching ideas.
 
+
 ## Core features
 
 - Browse all triads or focus "By Key" (select tonic + mode).
 - Select multiple chords to find all keys where those chords are diatonic.
 - Persistent theme preference (system / light / dark) saved to `localStorage`.
 - Tooltips and accessible controls for keyboard + mouse use.
+
+**Supported modes:**
+This app analyzes only Ionian (Major) and Aeolian (Natural Minor) modes. Other modes (Dorian, Mixolydian, etc.) are not supported.
 
 ## How to use
 

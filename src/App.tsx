@@ -90,8 +90,10 @@ export function App() {
                     or table entries to discover all major and minor keys where those chords occur diatonically.
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    <strong>Modes:</strong> <em>By Key</em> — choose a tonic and mode to display that key's
-                    diatonic triads; <em>Free</em> — browse all triads and select any combination.
+                    <strong>Supported modes:</strong> <u>Ionian (Major)</u> and <u>Aeolian (Natural Minor)</u> only. Other modes (Dorian, Mixolydian, etc.) are not included.
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    <em>By Key</em> — choose a tonic and mode to display that key's diatonic triads; <em>Free</em> — browse all triads and select any combination.
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
                     Use the toggles to switch views. Click a chord to toggle selection; selected chords appear in
