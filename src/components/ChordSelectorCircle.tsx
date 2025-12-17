@@ -59,6 +59,7 @@ export function ChordSelectorCircle({
         const btnSize = Math.max(20, Math.round(baseButtonSize * Math.pow(0.85, ringIndex)));
         const x = center + ringRadius * Math.cos(angle);
         const y = center + ringRadius * Math.sin(angle);
+        // On mobile, remove focus/hover delay: selection should update immediately on tap
         const selected = selectedChords.some(
           sel => sel.root === chord.root && sel.mode === chord.mode && sel.degree === chord.degree
         );
@@ -79,6 +80,13 @@ export function ChordSelectorCircle({
               boxShadow: selected ? 4 : 1,
               transition: 'all 0.2s',
               zIndex: rings - ringIndex,
+              // Remove default MUI hover/focus highlight on mobile for immediate feedback
+              '&:hover, &:focus, &:active': {
+                bgcolor: selected ? theme.palette.primary.main : theme.palette.background.paper,
+                color: selected ? theme.palette.primary.contrastText : theme.palette.text.primary,
+              },
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
             }}
             size={btnSize >= 48 ? 'large' : btnSize >= 36 ? 'medium' : 'small'}
           >

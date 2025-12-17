@@ -1,6 +1,6 @@
 
 import { useMemo, useState, type MouseEvent } from 'react';
-import { ThemeProvider, CssBaseline, createTheme, useMediaQuery, Container, Typography, Box, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { ThemeProvider, CssBaseline, createTheme, useMediaQuery, Container, Typography, Box, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import type { Note, Mode, Chord } from './music/types';
 import { buildDiatonicChords, buildAllTriads, findMatchingKeys } from './music/logic';
 import { ChordSelectorCircle } from './components/ChordSelectorCircle';
@@ -54,14 +54,23 @@ export function App() {
           <Typography variant="h5" fontWeight={700}>
             Diatonic Harmony
           </Typography>
-          <ToggleButton
-            value="theme"
-            selected={mode === 'dark'}
-            onChange={handleThemeToggle}
-            size="small"
+          <Tooltip
+            title={mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            arrow
           >
-            {mode === 'dark' ? '🌙' : '☀️'}
-          </ToggleButton>
+            <span
+              style={{ fontSize: 28, display: 'inline-block', lineHeight: 1, cursor: 'pointer' }}
+              tabIndex={0}
+              role="button"
+              aria-label={mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              onClick={handleThemeToggle}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') handleThemeToggle();
+              }}
+            >
+              {mode === 'dark' ? '☀️' : '🌙'}
+            </span>
+          </Tooltip>
         </Box>
         <Box mb={2}>
           <ToggleButtonGroup
@@ -69,10 +78,11 @@ export function App() {
             exclusive
             onChange={(_: React.MouseEvent<HTMLElement>, v: 'key' | 'free' | null) => v && setViewMode(v)}
             size="small"
-            sx={{ mb: 1, mr: 1 }}
+            fullWidth
+            sx={{ mb: 1, width: '100%' }}
           >
-            <ToggleButton value="key">By Key</ToggleButton>
-            <ToggleButton value="free">Free</ToggleButton>
+            <ToggleButton value="key" sx={{ flex: 1, minWidth: 0 }}>By Key</ToggleButton>
+            <ToggleButton value="free" sx={{ flex: 1, minWidth: 0 }}>Free</ToggleButton>
           </ToggleButtonGroup>
           {viewMode === 'key' && (
             <ToggleButtonGroup
@@ -80,10 +90,11 @@ export function App() {
               exclusive
               onChange={handleSelectorMode}
               size="small"
-              sx={{ mb: 1 }}
+              fullWidth
+              sx={{ mb: 1, width: '100%' }}
             >
-              <ToggleButton value="Ionian">Major</ToggleButton>
-              <ToggleButton value="Aeolian">Minor</ToggleButton>
+              <ToggleButton value="Ionian" sx={{ flex: 1, minWidth: 0 }}>Major</ToggleButton>
+              <ToggleButton value="Aeolian" sx={{ flex: 1, minWidth: 0 }}>Minor</ToggleButton>
             </ToggleButtonGroup>
           )}
           {viewMode === 'key' && (
@@ -92,10 +103,11 @@ export function App() {
               exclusive
               onChange={handleSelectorTonic}
               size="small"
-              sx={{ flexWrap: 'wrap' }}
+              fullWidth
+              sx={{ flexWrap: 'wrap', width: '100%' }}
             >
               {(['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'] as Note[]).map(note => (
-                <ToggleButton key={note} value={note}>{note}</ToggleButton>
+                <ToggleButton key={note} value={note} sx={{ flex: 1, minWidth: 0 }}>{note}</ToggleButton>
               ))}
             </ToggleButtonGroup>
           )}
