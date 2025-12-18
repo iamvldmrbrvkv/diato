@@ -1,5 +1,5 @@
-import type { Note, Mode, Chord, Key } from './types';
-import { getAllAllowedKeys, getMajorTonics, getMinorTonics } from './keys';
+import type { Note, Mode, Chord, Key } from "./types";
+import { getAllAllowedKeys, getMajorTonics, getMinorTonics } from "./keys";
 
 /**
  * Build a diatonic scale for a given tonic and mode using the explicit
@@ -8,7 +8,7 @@ import { getAllAllowedKeys, getMajorTonics, getMinorTonics } from './keys';
  */
 export function buildScale(tonic: Note, mode: Mode): Note[] {
   const keys = getAllAllowedKeys();
-  const found = keys.find(k => k.tonic === tonic && k.mode === mode);
+  const found = keys.find((k) => k.tonic === tonic && k.mode === mode);
   return found?.scale ? found.scale.slice() : [];
 }
 
@@ -16,10 +16,30 @@ export function buildScale(tonic: Note, mode: Mode): Note[] {
  * Build all diatonic triads for a key
  */
 export function buildDiatonicChords(key: Key): Chord[] {
-  const scale = key.scale && key.scale.length === 7 ? key.scale : buildScale(key.tonic, key.mode);
-  const qualities = key.mode === 'Ionian'
-    ? ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'] as const
-    : ['minor', 'diminished', 'major', 'minor', 'minor', 'major', 'major'] as const;
+  const scale =
+    key.scale && key.scale.length === 7
+      ? key.scale
+      : buildScale(key.tonic, key.mode);
+  const qualities =
+    key.mode === "Ionian"
+      ? ([
+          "major",
+          "minor",
+          "minor",
+          "major",
+          "major",
+          "minor",
+          "diminished",
+        ] as const)
+      : ([
+          "minor",
+          "diminished",
+          "major",
+          "minor",
+          "minor",
+          "major",
+          "major",
+        ] as const);
   return scale.map((note, i) => ({
     root: note,
     mode: key.mode,
@@ -54,23 +74,38 @@ export function buildAllTriads(): Chord[] {
 
   /** Majors: degree I triad of each major (Ionian) key. */
   for (const tonic of majorTonics) {
-    const key = allowed.find(k => k.tonic === tonic && k.mode === 'Ionian');
+    const key = allowed.find((k) => k.tonic === tonic && k.mode === "Ionian");
     if (!key || !key.scale) continue;
-    triads.push({ root: key.scale[0], mode: 'Ionian', degree: 1, quality: 'major' });
+    triads.push({
+      root: key.scale[0],
+      mode: "Ionian",
+      degree: 1,
+      quality: "major",
+    });
   }
 
   /** Minors: degree I triad of each minor (Aeolian) key. */
   for (const tonic of minorTonics) {
-    const key = allowed.find(k => k.tonic === tonic && k.mode === 'Aeolian');
+    const key = allowed.find((k) => k.tonic === tonic && k.mode === "Aeolian");
     if (!key || !key.scale) continue;
-    triads.push({ root: key.scale[0], mode: 'Aeolian', degree: 1, quality: 'minor' });
+    triads.push({
+      root: key.scale[0],
+      mode: "Aeolian",
+      degree: 1,
+      quality: "minor",
+    });
   }
 
   /** Diminished: degree VII (vii°) triad of each major key (degree 7). */
   for (const tonic of majorTonics) {
-    const key = allowed.find(k => k.tonic === tonic && k.mode === 'Ionian');
+    const key = allowed.find((k) => k.tonic === tonic && k.mode === "Ionian");
     if (!key || !key.scale) continue;
-    triads.push({ root: key.scale[6], mode: 'Ionian', degree: 7, quality: 'diminished' });
+    triads.push({
+      root: key.scale[6],
+      mode: "Ionian",
+      degree: 7,
+      quality: "diminished",
+    });
   }
 
   return triads;
@@ -79,22 +114,29 @@ export function buildAllTriads(): Chord[] {
 /**
  * Find all keys where all selected chords are diatonic
  */
-export function findMatchingKeys(selectedChords: Chord[]): { key: Key, availableChords: Chord[] }[] {
+export function findMatchingKeys(
+  selectedChords: Chord[]
+): { key: Key; availableChords: Chord[] }[] {
   return getAllKeys()
-    .map(key => {
+    .map((key) => {
       const diatonic = buildDiatonicChords(key);
       /**
        * A selected chord is considered present in a key when the key's diatonic
        * triads contain a chord with the same root and triad quality.
        */
-      const matches = selectedChords.every(sel =>
-        diatonic.some(chord => chord.root === sel.root && chord.quality === sel.quality)
+      const matches = selectedChords.every((sel) =>
+        diatonic.some(
+          (chord) => chord.root === sel.root && chord.quality === sel.quality
+        )
       );
       if (!matches) return null;
-      const availableChords = diatonic.filter(chord =>
-        !selectedChords.some(sel => chord.root === sel.root && chord.quality === sel.quality)
+      const availableChords = diatonic.filter(
+        (chord) =>
+          !selectedChords.some(
+            (sel) => chord.root === sel.root && chord.quality === sel.quality
+          )
       );
       return { key, availableChords };
     })
-    .filter(Boolean) as { key: Key, availableChords: Chord[] }[];
+    .filter(Boolean) as { key: Key; availableChords: Chord[] }[];
 }

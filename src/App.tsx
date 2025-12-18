@@ -123,7 +123,7 @@ export function App() {
                 <Box sx={{ maxWidth: 420 }}>
                   <Typography variant="body2">
                     This app helps you discover keys and diatonic chords from a
-                    small set of chosen triads — useful when you're starting to
+                    small set of chosen triads - useful when you're starting to
                     write music and want harmony suggestions.
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
@@ -236,7 +236,7 @@ export function App() {
             <ToggleButton value="byKey" sx={{ flex: 1, minWidth: 0 }}>
               <Tooltip
                 title={
-                  "By Key (circle of fifths) - outer ring shows Ionian (Major), inner ring shows Aeolian (Natural Minor). Click a tonic to view triads, then click triads to select. Results show matching keys and remaining diatonic chords."
+                  "By Key (circle of fifths): outer ring shows Ionian (Major), inner ring shows Aeolian (Natural Minor). Click a tonic to view triads, then click triads to select. Results show matching keys and remaining diatonic chords."
                 }
                 arrow
               >
@@ -254,7 +254,7 @@ export function App() {
             <ToggleButton value="free" sx={{ flex: 1, minWidth: 0 }}>
               <Tooltip
                 title={
-                  "Free — browse all triads and select any combination to analyze."
+                  "Free - browse all triads and select any combination to analyze."
                 }
                 arrow
               >
@@ -339,6 +339,11 @@ export function App() {
                     aria-label="Reset selection"
                     onClick={handleReset}
                     size="medium"
+                    sx={{
+                      position: { xs: "absolute", sm: "static" },
+                      top: { xs: -28, sm: "auto" },
+                      right: { xs: 0, sm: "auto" },
+                    }}
                   >
                     <RefreshIcon fontSize="inherit" />
                   </IconButton>

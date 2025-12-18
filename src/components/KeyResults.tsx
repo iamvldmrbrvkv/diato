@@ -1,7 +1,7 @@
-import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import type { Chord, Key } from '../music/types';
-import { getTonicDisplayLabel } from '../music/keys';
+import { Box, Card, CardContent, Typography, Chip, Stack } from "@mui/material";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import type { Chord, Key } from "../music/types";
+import { getTonicDisplayLabel } from "../music/keys";
 
 /**
  * Props for KeyResults component
@@ -17,7 +17,7 @@ export interface KeyResultsProps {
  */
 function formatKeyName(key: Key): string {
   const label = getTonicDisplayLabel(key.tonic, key.mode);
-  return `${label} ${key.mode === 'Ionian' ? 'major' : 'minor'}`;
+  return `${label} ${key.mode === "Ionian" ? "major" : "minor"}`;
 }
 
 /**
@@ -34,23 +34,47 @@ function KeyResults({ results }: KeyResultsProps) {
       ) : (
         <Stack spacing={2}>
           {results.map(({ key, availableChords }, idx) => (
-            <Card key={idx} variant="outlined" sx={{ bgcolor: 'background.paper' }}>
+            <Card
+              key={idx}
+              variant="outlined"
+              sx={{ bgcolor: "background.paper" }}
+            >
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                >
                   <MusicNoteIcon fontSize="small" />
                   {formatKeyName(key)}
                 </Typography>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ mb: 0.5 }}
+                >
                   Available chords:
                 </Typography>
-                <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ columnGap: 1, rowGap: 1 }} alignItems="center">
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  flexWrap="wrap"
+                  sx={{ columnGap: 1, rowGap: 1 }}
+                  alignItems="center"
+                >
                   {availableChords.map((chord, i) => (
                     <Chip
                       key={i}
-                      label={`${chord.root}${chord.quality === 'major' ? '' : chord.quality === 'minor' ? 'm' : 'dim'} (${chord.degree})`}
+                      label={`${chord.root}${
+                        chord.quality === "major"
+                          ? ""
+                          : chord.quality === "minor"
+                          ? "m"
+                          : "dim"
+                      } (${chord.degree})`}
                       color="default"
                       size="medium"
-                      sx={{ cursor: 'default', m: 0.25 }}
+                      sx={{ cursor: "default", m: 0.25 }}
                     />
                   ))}
                 </Stack>

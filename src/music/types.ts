@@ -6,7 +6,7 @@
 export type Note = string;
 
 /** Musical mode: Ionian (major) or Aeolian (minor) */
-export type Mode = 'Ionian' | 'Aeolian';
+export type Mode = "Ionian" | "Aeolian";
 
 /**
  * Represents a diatonic triad chord (root note, mode, degree)
@@ -16,7 +16,7 @@ export interface Chord {
   mode: Mode;
   /** Scale degree within the diatonic scale (1-7). */
   degree: number;
-  quality: 'major' | 'minor' | 'diminished';
+  quality: "major" | "minor" | "diminished";
 }
 
 /**

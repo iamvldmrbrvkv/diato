@@ -10,7 +10,7 @@ diatonic chords remain available in each matching key.
 
 - Interactive: select chords on the circle of fifths or from the triad table and see matching keys.
 - Educational: shows diatonic triads for selected keys and highlights remaining available chords.
-- Lightweight: runs locally with Vite, no server required — great for quick study or sketching ideas.
+- Lightweight: runs locally with Vite, no server required - great for quick study or sketching ideas.
 
 
 ## Core features
