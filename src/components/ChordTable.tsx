@@ -36,7 +36,7 @@ export function ChordTable({ triads, selectedChords, onToggle, onReset }: ChordT
               label={label}
               onClick={() => onToggle(t)}
               color={selected ? 'primary' : 'default'}
-              size="small"
+              size="medium"
               sx={{ cursor: 'pointer', m: 0.25 }}
             />
           );

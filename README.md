@@ -1,26 +1,27 @@
 # Diato
 
-[Diato](https://diato-explorer.vercel.app/) is a small React + TypeScript web app for exploring diatonic triads and
-discovering which major/minor keys contain a given set of chords. The app is designed
-for music students, hobbyists, and composers who want a lightweight interactive tool
-for learning harmony or experimenting with chord choices while composing.
+[Diato](https://diato-explorer.vercel.app/) is an interactive React + TypeScript web app that helps
+musicians discover keys and diatonic chords from a small set of chosen triads. Use the
+circle of fifths or the triad table to select chords and instantly see which
+Ionian (Major) and Aeolian (Natural Minor) keys contain those chords, plus which
+diatonic chords remain available in each matching key.
 
 ## Why this app
 
-- Interactive: select chords visually (circle or table) and instantly see matching keys.
-- Educational: exposes diatonic triads for each key and highlights remaining available chords.
+- Interactive: select chords on the circle of fifths or from the triad table and see matching keys.
+- Educational: shows diatonic triads for selected keys and highlights remaining available chords.
 - Lightweight: runs locally with Vite, no server required — great for quick study or sketching ideas.
 
 
 ## Core features
 
-- Browse all triads or focus "By Key" (select tonic + mode).
-- Select multiple chords to find all keys where those chords are diatonic.
-- Persistent theme preference (system / light / dark) saved to `localStorage`.
-- Tooltips and accessible controls for keyboard + mouse use.
+ - Browse all triads (Free) or focus "By Key" using the circle of fifths (outer ring = Ionian, inner ring = Aeolian).
+ - Select multiple chords to find all keys where those chords are diatonic and see remaining diatonic chords per key.
+ - Persistent theme preference (system / light / dark) saved to `localStorage`.
+ - Tooltips and accessible controls for keyboard and mouse use.
 
 **Supported modes:**
-This app analyzes only Ionian (Major) and Aeolian (Natural Minor) modes. Other modes (Dorian, Mixolydian, etc.) are not supported.
+The app handles Ionian (Major) and Aeolian (Natural Minor) only. It does not include borrowed chords, secondary dominants, or altered minor scales.
 
 ## How to use
 
@@ -41,8 +42,10 @@ npm run dev
 
 ## Intended audience
 
-- Students learning diatonic harmony and roman numeral analysis.
-- Composers or songwriters who want a quick reference to which keys contain selected chords.
+- Beginners and students learning basic diatonic harmony.
+- Songwriters, composers, and hobbyists who want quick harmony suggestions from a small chord set.
+
+Diato is designed to help users who are starting to write music and want to expand chord choices by exploring which keys fit their current chords and what other diatonic chords are available in those keys.
 
 ## Contributing
 

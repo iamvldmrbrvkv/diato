@@ -19,7 +19,7 @@ export interface ChordSelectorCircleProps {
  * @param onSelect Callback when a chord is selected/deselected
  * @param onReset Callback to reset selection
  */
-export function ChordSelectorCircle({
+function ChordSelectorCircle({
   diatonicChords,
   selectedChords,
   onSelect,
@@ -52,14 +52,14 @@ export function ChordSelectorCircle({
         const indexInRing = i - ringIndex * perRing;
         const itemsInThisRing = Math.min(perRing, chordCount - ringIndex * perRing);
         const angle = (2 * Math.PI * indexInRing) / itemsInThisRing - Math.PI / 2;
-        // Spread rings evenly from outer `radius` inward, avoid collapsing to center
+          /** Spread rings evenly from outer `radius` inward to avoid collapsing to center. */
         const ringRadiusRaw = Math.round(radius * (1 - ringIndex / (rings + 1)));
         const ringRadius = Math.max(48, ringRadiusRaw);
-        // Decrease button size progressively for inner rings to avoid overlap
+          /** Decrease button size progressively for inner rings to avoid overlap. */
         const btnSize = Math.max(20, Math.round(baseButtonSize * Math.pow(0.85, ringIndex)));
         const x = center + ringRadius * Math.cos(angle);
         const y = center + ringRadius * Math.sin(angle);
-        // On mobile, remove focus/hover delay: selection should update immediately on tap
+          /** On mobile, remove focus/hover delay so selection updates immediately on tap. */
         const selected = selectedChords.some(
           sel => sel.root === chord.root && sel.mode === chord.mode && sel.degree === chord.degree
         );
@@ -80,7 +80,7 @@ export function ChordSelectorCircle({
               boxShadow: selected ? 4 : 1,
               transition: 'all 0.2s',
               zIndex: rings - ringIndex,
-              // Remove default MUI hover/focus highlight on mobile for immediate feedback
+                /** Remove default MUI hover/focus highlight on mobile for immediate feedback. */
               '&:hover, &:focus, &:active': {
                 bgcolor: selected ? theme.palette.primary.main : theme.palette.background.paper,
                 color: selected ? theme.palette.primary.contrastText : theme.palette.text.primary,
@@ -102,3 +102,5 @@ export function ChordSelectorCircle({
     </Box>
   );
 }
+
+export default ChordSelectorCircle;

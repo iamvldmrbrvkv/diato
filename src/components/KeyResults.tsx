@@ -1,6 +1,7 @@
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import type { Chord, Key } from '../music/types';
+import { getTonicDisplayLabel } from '../music/keys';
 
 /**
  * Props for KeyResults component
@@ -15,14 +16,15 @@ export interface KeyResultsProps {
  * @returns Formatted key name
  */
 function formatKeyName(key: Key): string {
-  return `${key.tonic} ${key.mode === 'Ionian' ? 'major' : 'minor'}`;
+  const label = getTonicDisplayLabel(key.tonic, key.mode);
+  return `${label} ${key.mode === 'Ionian' ? 'major' : 'minor'}`;
 }
 
 /**
  * Displays a list of matching keys and available diatonic chords
  * @param results Array of matching keys and their available chords
  */
-export function KeyResults({ results }: KeyResultsProps) {
+function KeyResults({ results }: KeyResultsProps) {
   return (
     <Box mt={2}>
       {results.length === 0 ? (
@@ -41,13 +43,13 @@ export function KeyResults({ results }: KeyResultsProps) {
                 <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
                   Available chords:
                 </Typography>
-                <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ columnGap: 1, rowGap: 1 }}>
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" sx={{ columnGap: 1, rowGap: 1 }} alignItems="center">
                   {availableChords.map((chord, i) => (
                     <Chip
                       key={i}
                       label={`${chord.root}${chord.quality === 'major' ? '' : chord.quality === 'minor' ? 'm' : 'dim'} (${chord.degree})`}
                       color="default"
-                      size="small"
+                      size="medium"
                       sx={{ cursor: 'default', m: 0.25 }}
                     />
                   ))}
@@ -60,3 +62,5 @@ export function KeyResults({ results }: KeyResultsProps) {
     </Box>
   );
 }
+
+export default KeyResults;
