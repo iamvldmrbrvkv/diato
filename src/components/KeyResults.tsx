@@ -8,6 +8,7 @@ import { getTonicDisplayLabel } from "../music/keys";
  */
 export interface KeyResultsProps {
   results: { key: Key; availableChords: Chord[] }[];
+  selectedCount?: number;
 }
 
 /**
@@ -24,9 +25,20 @@ function formatKeyName(key: Key): string {
  * Displays a list of matching keys and available diatonic chords
  * @param results Array of matching keys and their available chords
  */
-function KeyResults({ results }: KeyResultsProps) {
+function KeyResults({ results, selectedCount = 0 }: KeyResultsProps) {
   return (
     <Box mt={2}>
+      <Typography variant="subtitle1" sx={{ lineHeight: 1, mb: 1 }}>
+        {selectedCount > 0
+          ? "Keys containing selected triads"
+          : "All keys"}
+      </Typography>
+      {selectedCount === 0 ? (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          No triads selected - displaying all keys and their diatonic chords.
+        </Typography>
+      ) : null}
+
       {results.length === 0 ? (
         <Typography variant="body1" color="text.secondary" align="center">
           No matching keys found

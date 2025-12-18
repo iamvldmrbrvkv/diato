@@ -46,10 +46,7 @@ export function ChordTable({
       >
         {triads.map((t, i) => {
           const selected = selectedChords.some(
-            (s) =>
-              s.root === t.root &&
-              s.quality === t.quality &&
-              s.degree === t.degree
+            (s) => s.root === t.root && s.quality === t.quality
           );
           const label = `${t.root}${
             t.quality === "major" ? "" : t.quality === "minor" ? "m" : "dim"

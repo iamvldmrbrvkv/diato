@@ -60,8 +60,9 @@ export function App() {
     }
   }, [themePref]);
 
-  /** State: currently selected chords. */
-  const [selectedChords, setSelectedChords] = useState<Chord[]>([]);
+  /** State: selections are independent for each mode. */
+  const [selectedByKey, setSelectedByKey] = useState<Chord[]>([]);
+  const [selectedFree, setSelectedFree] = useState<Chord[]>([]);
 
   /** View mode: 'byKey' shows the circle; 'free' shows all triads. */
   const [viewMode, setViewMode] = useState<"byKey" | "free">("byKey");
@@ -75,14 +76,17 @@ export function App() {
     [selectorTonic, selectorMode]
   );
 
-  /** Analyze currently selected chords and compute matching keys. */
-  const results = useMemo(
-    () => findMatchingKeys(selectedChords),
-    [selectedChords]
-  );
+  /** Use the active selection according to the current view mode. */
+  const activeSelected = viewMode === "byKey" ? selectedByKey : selectedFree;
 
-  /** Reset chord selection to an empty array. */
-  const handleReset = () => setSelectedChords([]);
+  /** Analyze the active selected chords and compute matching keys. */
+  const results = useMemo(() => findMatchingKeys(activeSelected), [activeSelected]);
+
+  /** Reset chord selection for the active mode only. */
+  const handleReset = () => {
+    if (viewMode === "byKey") setSelectedByKey([]);
+    else setSelectedFree([]);
+  };
 
   /** Cycle theme preference: system -> light -> dark -> system. */
   const handleCycleClick = () => {
@@ -279,7 +283,7 @@ export function App() {
                 onSelect={(tonic, mode) => {
                   setSelectorTonic(tonic);
                   setSelectorMode(mode);
-                  setSelectedChords([]);
+                  setSelectedByKey([]);
                 }}
               />
 
@@ -293,11 +297,8 @@ export function App() {
                   sx={{ columnGap: 1, rowGap: 1, justifyContent: "center" }}
                 >
                   {diatonicChords.map((chord, idx) => {
-                    const isSelected = selectedChords.some(
-                      (sel) =>
-                        sel.root === chord.root &&
-                        sel.quality === chord.quality &&
-                        sel.degree === chord.degree
+                    const isSelected = selectedByKey.some(
+                      (sel) => sel.root === chord.root && sel.quality === chord.quality
                     );
                     const label = `${chord.root}${
                       chord.quality === "major"
@@ -311,21 +312,9 @@ export function App() {
                         key={idx}
                         label={label}
                         onClick={() => {
-                          setSelectedChords((selected) =>
-                            selected.some(
-                              (s) =>
-                                s.root === chord.root &&
-                                s.quality === chord.quality &&
-                                s.degree === chord.degree
-                            )
-                              ? selected.filter(
-                                  (s) =>
-                                    !(
-                                      s.root === chord.root &&
-                                      s.quality === chord.quality &&
-                                      s.degree === chord.degree
-                                    )
-                                )
+                          setSelectedByKey((selected) =>
+                            selected.some((s) => s.root === chord.root && s.quality === chord.quality)
+                              ? selected.filter((s) => !(s.root === chord.root && s.quality === chord.quality))
                               : [...selected, chord]
                           );
                         }}
@@ -340,7 +329,7 @@ export function App() {
                     onClick={handleReset}
                     size="medium"
                     sx={{
-                      position: { xs: "absolute", sm: "static" },
+                      position: { xs: "absolute", sm: "relative" },
                       top: { xs: -28, sm: "auto" },
                       right: { xs: 0, sm: "auto" },
                     }}
@@ -353,23 +342,11 @@ export function App() {
           ) : (
             <ChordTable
               triads={buildAllTriads()}
-              selectedChords={selectedChords}
+              selectedChords={selectedFree}
               onToggle={(chord) => {
-                setSelectedChords((selected) =>
-                  selected.some(
-                    (s) =>
-                      s.root === chord.root &&
-                      s.quality === chord.quality &&
-                      s.degree === chord.degree
-                  )
-                    ? selected.filter(
-                        (s) =>
-                          !(
-                            s.root === chord.root &&
-                            s.quality === chord.quality &&
-                            s.degree === chord.degree
-                          )
-                      )
+                setSelectedFree((selected) =>
+                  selected.some((s) => s.root === chord.root && s.quality === chord.quality)
+                    ? selected.filter((s) => !(s.root === chord.root && s.quality === chord.quality))
                     : [...selected, chord]
                 );
               }}
@@ -377,7 +354,7 @@ export function App() {
             />
           )}
         </Box>
-        <KeyResults results={results} />
+        <KeyResults results={results} selectedCount={activeSelected.length} />
       </Container>
     </ThemeProvider>
   );

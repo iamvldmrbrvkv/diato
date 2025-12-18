@@ -70,10 +70,7 @@ function ChordSelectorCircle({
         const y = center + ringRadius * Math.sin(angle);
         /** On mobile, remove focus/hover delay so selection updates immediately on tap. */
         const selected = selectedChords.some(
-          (sel) =>
-            sel.root === chord.root &&
-            sel.mode === chord.mode &&
-            sel.degree === chord.degree
+          (sel) => sel.root === chord.root && sel.quality === chord.quality
         );
         return (
           <IconButton
