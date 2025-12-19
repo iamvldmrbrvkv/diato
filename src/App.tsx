@@ -196,45 +196,31 @@ export function App() {
               title={
                 <Box sx={{ maxWidth: 420 }}>
                   <Typography variant="body2">
-                    This app helps you discover keys and diatonic chords from a
-                    small set of chosen triads — useful when you're starting to
-                    write music and want harmony suggestions. When you select a
-                    tonic on the circle you can play the harmony for that key
-                    (a short sequence of its diatonic triads). You can also
-                    play any individual triad by clicking it.
+                    Discover keys and diatonic triads from a small set of
+                    chosen triads. Select a tonic on the circle to hear that
+                    key's diatonic triads, or click any triad to play it.
                   </Typography>
 
                   <Typography variant="body2" sx={{ mt: 1, fontWeight: 600 }}>
-                    By Key (circle of fifths)
+                    By Key
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 0.5 }}>
-                    The circle has two rings: the outer ring shows Ionian
-                    (Major) tonics, the inner ring shows Aeolian (Natural Minor)
-                    tonics. Pick a tonic on the circle to view that key's
-                    diatonic triads, then choose chords from that key. Selected
-                    triads are analyzed below: the app lists all major/minor
-                    keys that contain those chords diatonically and shows which
-                    other diatonic chords remain available in each matching key.
+                    Outer ring: Ionian (Major). Inner ring: Aeolian (Natural
+                    Minor). Pick a tonic to view and play its diatonic triads;
+                    selected triads are analyzed for matching keys and remaining
+                    diatonic chords.
                   </Typography>
 
                   <Typography variant="body2" sx={{ mt: 1, fontWeight: 600 }}>
                     Free
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 0.5 }}>
-                    Free mode shows a table of all triads so you can select any
-                    combination of chords without first choosing a tonic. Use
-                    the triad table to pick any major, minor, or diminished
-                    triads. Selections in Free mode are independent from the
-                    circle and let you pick any triads. The analysis only
-                    reports keys where the selected triads appear diatonically -
-                    each matching key (tonality) is shown along with the
-                    remaining diatonic chords available in that key.
+                    Browse all triads and select any combination to find keys
+                    where those triads are diatonic.
                   </Typography>
 
                   <Typography variant="body2" sx={{ mt: 1 }}>
-                    Supported modes: Ionian (Major) and Aeolian (Natural Minor)
-                    only. No borrowed chords, secondary dominants, or altered
-                    minor scales are considered.
+                    Supported modes: Ionian and Aeolian only.
                   </Typography>
                 </Box>
               }
