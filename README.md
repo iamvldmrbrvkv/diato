@@ -14,8 +14,8 @@ diatonic chords remain available in each matching key.
 
 
 ## Core features
-
- - Browse all triads (Free) or focus "By Key" using the circle of fifths (outer ring = Ionian, inner ring = Aeolian).
+ 
+   - Focus "By Key" using the circle of fifths (outer ring - Ionian, inner ring - Aeolian), or "Free" to browse all triads.
  - Select multiple chords to find all keys where those chords are diatonic and see remaining diatonic chords per key.
  - Persistent theme preference (system / light / dark) saved to `localStorage`.
  - Tooltips and accessible controls for keyboard and mouse use.
