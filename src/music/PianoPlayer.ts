@@ -36,6 +36,8 @@ function normalizeNote(note: string) {
 }
 
 class PianoPlayerClass {
+  private isRecreating = false;
+  private recreateTimeoutId: number | null = null;
   private audioCtx: AudioContext | null = null;
   private instrument: SFInstrument | null = null;
   private masterGain: GainNode | null = null;
@@ -57,6 +59,22 @@ class PianoPlayerClass {
     this.sequenceToken += 1;
   }
 
+  /**
+   * Initialize runtime-only listeners.
+   * Registers a visibilitychange listener so the player can proactively
+   * suspend the AudioContext when the document is hidden and resume or
+   * recreate it when visible again.
+   */
+  constructor() {
+    if (typeof document !== "undefined" && document.addEventListener) {
+      this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
+      document.addEventListener(
+        "visibilitychange",
+        this.handleVisibilityChange
+      );
+    }
+  }
+
   async ensureLoaded() {
     if (this.instrument && this.audioCtx) return;
     if (this.loading) return this.loading;
@@ -72,6 +90,112 @@ class PianoPlayerClass {
       )) as SFInstrument;
     })();
     return this.loading;
+  }
+
+  /**
+   * Return whether the player currently believes it is actively playing.
+   */
+  private isActuallyPlaying() {
+    return this.playingNodes.length > 0 || this.sequenceTimers.length > 0;
+  }
+
+
+  /**
+   * Visibility change handler. When the document becomes hidden, proactively
+   * suspend the AudioContext if nothing is playing to avoid Safari killing
+   * a running-but-silent context. When visible, attempt to resume or
+   * recreate the context if necessary.
+   */
+  private handleVisibilityChange() {
+    try {
+      if (document.visibilityState === "hidden") {
+        void this.suspendAudioContext();
+      } else {
+        void this.resumeOrRecreateAudioContext();
+      }
+    } catch (err) {
+      console.warn("PianoPlayer: visibility handler failed", err);
+    }
+  }
+
+  /**
+   * Suspend the AudioContext proactively when hidden and the player is idle.
+   */
+  private async suspendAudioContext() {
+    try {
+      if (!this.audioCtx) return;
+      if (this.isActuallyPlaying()) return;
+      if (this.audioCtx.state === "running") {
+        await this.audioCtx.suspend();
+        console.debug("PianoPlayer: audioCtx suspended proactively");
+      }
+    } catch (err) {
+      console.warn("PianoPlayer: suspendAudioContext failed", err);
+    }
+  }
+
+  /**
+   * Try to resume the existing AudioContext. If resume does not result in a
+   * running context, close and recreate the context and reload the instrument.
+   */
+  private async resumeOrRecreateAudioContext() {
+    try {
+      if (this.isRecreating) return;
+      if (!this.audioCtx) {
+        // No context — ensureLoaded will create one and load instrument.
+        this.instrument = null; // force reload of instrument
+        await this.ensureLoaded();
+        console.debug("PianoPlayer: recreated audioCtx via ensureLoaded");
+        return;
+      }
+
+      // Try a simple resume first
+      try {
+        await this.audioCtx.resume();
+      } catch (err) {
+        console.debug("PianoPlayer: audioCtx.resume() threw", err);
+      }
+
+      // Wait a short moment to let state settle
+      await new Promise((r) => setTimeout(r, 220));
+
+      if (this.audioCtx.state === "running") {
+        console.debug("PianoPlayer: audioCtx resumed successfully");
+        return;
+      }
+
+      // Failed to resume — recreate the AudioContext and instrument.
+      this.isRecreating = true;
+      try {
+        await this.audioCtx.close();
+      } catch (err) {
+        console.warn("PianoPlayer: audioCtx.close() failed", err);
+      }
+      this.audioCtx = null;
+      this.instrument = null; // force reload
+      // Debounce recreation slightly to avoid thrash on rapid visibility changes
+      if (this.recreateTimeoutId) {
+        clearTimeout(this.recreateTimeoutId);
+        this.recreateTimeoutId = null;
+      }
+      this.recreateTimeoutId = window.setTimeout(async () => {
+        try {
+          await this.ensureLoaded();
+          console.debug("PianoPlayer: audioCtx recreated after resume failure");
+        } catch (err) {
+          console.warn("PianoPlayer: recreate failed", err);
+        } finally {
+          this.isRecreating = false;
+          if (this.recreateTimeoutId) {
+            clearTimeout(this.recreateTimeoutId);
+            this.recreateTimeoutId = null;
+          }
+        }
+      }, 300);
+    } catch (err) {
+      console.warn("PianoPlayer: resumeOrRecreateAudioContext failed", err);
+      this.isRecreating = false;
+    }
   }
 
   /**
