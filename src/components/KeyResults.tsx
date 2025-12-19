@@ -29,9 +29,7 @@ function KeyResults({ results, selectedCount = 0 }: KeyResultsProps) {
   return (
     <Box mt={2}>
       <Typography variant="subtitle1" sx={{ lineHeight: 1, mb: 1 }}>
-        {selectedCount > 0
-          ? "Keys containing selected triads"
-          : "All keys"}
+        {selectedCount > 0 ? "Keys containing selected triads" : "All keys"}
       </Typography>
       {selectedCount === 0 ? (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

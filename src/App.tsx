@@ -80,7 +80,10 @@ export function App() {
   const activeSelected = viewMode === "byKey" ? selectedByKey : selectedFree;
 
   /** Analyze the active selected chords and compute matching keys. */
-  const results = useMemo(() => findMatchingKeys(activeSelected), [activeSelected]);
+  const results = useMemo(
+    () => findMatchingKeys(activeSelected),
+    [activeSelected]
+  );
 
   /** Reset chord selection for the active mode only. */
   const handleReset = () => {
@@ -130,18 +133,34 @@ export function App() {
                     small set of chosen triads - useful when you're starting to
                     write music and want harmony suggestions.
                   </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
+
+                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 600 }}>
+                    By Key (circle of fifths)
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
                     The circle has two rings: the outer ring shows Ionian
                     (Major) tonics, the inner ring shows Aeolian (Natural Minor)
                     tonics. Pick a tonic on the circle to view that key's
-                    diatonic triads, then choose chords from that key.
+                    diatonic triads, then choose chords from that key. Selected
+                    triads are analyzed below: the app lists all major/minor
+                    keys that contain those chords diatonically and shows which
+                    other diatonic chords remain available in each matching key.
                   </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    Selected triads (from the circle or the triad table) are
-                    analyzed below: the app lists all major/minor keys that
-                    contain those chords diatonically and shows which other
-                    diatonic chords remain available in each matching key.
+
+                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 600 }}>
+                    Free
                   </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    Free mode shows a table of all triads so you can select any
+                    combination of chords without first choosing a tonic. Use
+                    the triad table to pick any major, minor, or diminished
+                    triads. Selections in Free mode are independent from the
+                    circle and let you pick any triads. The analysis only
+                    reports keys where the selected triads appear diatonically -
+                    each matching key (tonality) is shown along with the
+                    remaining diatonic chords available in that key.
+                  </Typography>
+
                   <Typography variant="body2" sx={{ mt: 1 }}>
                     Supported modes: Ionian (Major) and Aeolian (Natural Minor)
                     only. No borrowed chords, secondary dominants, or altered
@@ -298,7 +317,8 @@ export function App() {
                 >
                   {diatonicChords.map((chord, idx) => {
                     const isSelected = selectedByKey.some(
-                      (sel) => sel.root === chord.root && sel.quality === chord.quality
+                      (sel) =>
+                        sel.root === chord.root && sel.quality === chord.quality
                     );
                     const label = `${chord.root}${
                       chord.quality === "major"
@@ -313,8 +333,18 @@ export function App() {
                         label={label}
                         onClick={() => {
                           setSelectedByKey((selected) =>
-                            selected.some((s) => s.root === chord.root && s.quality === chord.quality)
-                              ? selected.filter((s) => !(s.root === chord.root && s.quality === chord.quality))
+                            selected.some(
+                              (s) =>
+                                s.root === chord.root &&
+                                s.quality === chord.quality
+                            )
+                              ? selected.filter(
+                                  (s) =>
+                                    !(
+                                      s.root === chord.root &&
+                                      s.quality === chord.quality
+                                    )
+                                )
                               : [...selected, chord]
                           );
                         }}
@@ -345,8 +375,15 @@ export function App() {
               selectedChords={selectedFree}
               onToggle={(chord) => {
                 setSelectedFree((selected) =>
-                  selected.some((s) => s.root === chord.root && s.quality === chord.quality)
-                    ? selected.filter((s) => !(s.root === chord.root && s.quality === chord.quality))
+                  selected.some(
+                    (s) => s.root === chord.root && s.quality === chord.quality
+                  )
+                    ? selected.filter(
+                        (s) =>
+                          !(
+                            s.root === chord.root && s.quality === chord.quality
+                          )
+                      )
                     : [...selected, chord]
                 );
               }}
