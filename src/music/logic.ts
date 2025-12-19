@@ -130,12 +130,12 @@ export function findMatchingKeys(
         )
       );
       if (!matches) return null;
-      const availableChords = diatonic.filter(
-        (chord) =>
-          !selectedChords.some(
-            (sel) => chord.root === sel.root && chord.quality === sel.quality
-          )
-      );
+      // Include all diatonic chords in the result so the UI can show both
+      // selected and still-available chords. Previously selected chords were
+      // removed from `availableChords` which made them disappear from the
+      // matching-key display; keep the full set and let the UI highlight
+      // which ones are selected.
+      const availableChords = diatonic.slice();
       return { key, availableChords };
     })
     .filter(Boolean) as { key: Key; availableChords: Chord[] }[];

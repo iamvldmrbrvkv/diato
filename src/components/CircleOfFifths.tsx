@@ -7,6 +7,8 @@ import {
   MINOR_TONICS_ORDER,
   getTonicDisplayLabel,
 } from "../music/keys";
+import { buildScale } from "../music/logic";
+import PianoPlayer from "../music/PianoPlayer";
 
 /**
  * Interactive SVG Circle of Fifths with two rings: major (outer), minor (inner).
@@ -104,11 +106,23 @@ const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
             const end = ((i + 1) * 360) / SECTORS;
             const isSelected =
               selectedTonic === tonic && selectedMode === "Ionian";
-            return (
+              return (
               <g
                 key={tonic}
                 style={{ cursor: "pointer" }}
-                onClick={() => onSelect(tonic, "Ionian")}
+                onClick={() => {
+                  const scale = buildScale(tonic, "Ionian");
+                  if (scale && scale.length === 7) {
+                    const chords = Array.from({ length: 7 }).map((_, idx) => {
+                      const rootIdx = idx;
+                      const thirdIdx = (rootIdx + 2) % 7;
+                      const fifthIdx = (rootIdx + 4) % 7;
+                      return [scale[rootIdx], scale[thirdIdx], scale[fifthIdx]] as string[];
+                    });
+                    PianoPlayer.playSequence(chords, 900, 60);
+                  }
+                  onSelect(tonic, "Ionian");
+                }}
                 onMouseEnter={() => setHoverMajor(i)}
                 onMouseLeave={() => setHoverMajor(null)}
               >
@@ -140,11 +154,23 @@ const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
             const end = ((i + 1) * 360) / SECTORS;
             const isSelected =
               selectedTonic === tonic && selectedMode === "Aeolian";
-            return (
+              return (
               <g
                 key={tonic}
                 style={{ cursor: "pointer" }}
-                onClick={() => onSelect(tonic, "Aeolian")}
+                onClick={() => {
+                  const scale = buildScale(tonic, "Aeolian");
+                  if (scale && scale.length === 7) {
+                    const chords = Array.from({ length: 7 }).map((_, idx) => {
+                      const rootIdx = idx;
+                      const thirdIdx = (rootIdx + 2) % 7;
+                      const fifthIdx = (rootIdx + 4) % 7;
+                      return [scale[rootIdx], scale[thirdIdx], scale[fifthIdx]] as string[];
+                    });
+                    PianoPlayer.playSequence(chords, 900, 60);
+                  }
+                  onSelect(tonic, "Aeolian");
+                }}
                 onMouseEnter={() => setHoverMinor(i)}
                 onMouseLeave={() => setHoverMinor(null)}
               >

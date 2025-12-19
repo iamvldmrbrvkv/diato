@@ -2,6 +2,7 @@ import { Box, Card, CardContent, Typography, Chip, Stack } from "@mui/material";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import type { Chord, Key } from "../music/types";
 import { getTonicDisplayLabel } from "../music/keys";
+import PianoPlayer from "../music/PianoPlayer";
 
 /**
  * Props for KeyResults component
@@ -9,6 +10,7 @@ import { getTonicDisplayLabel } from "../music/keys";
 export interface KeyResultsProps {
   results: { key: Key; availableChords: Chord[] }[];
   selectedCount?: number;
+  selectedChords?: Chord[];
 }
 
 /**
@@ -25,7 +27,11 @@ function formatKeyName(key: Key): string {
  * Displays a list of matching keys and available diatonic chords
  * @param results Array of matching keys and their available chords
  */
-function KeyResults({ results, selectedCount = 0 }: KeyResultsProps) {
+function KeyResults({
+  results,
+  selectedCount = 0,
+  selectedChords = [],
+}: KeyResultsProps) {
   return (
     <Box mt={2}>
       <Typography variant="subtitle1" sx={{ lineHeight: 1, mb: 1 }}>
@@ -72,21 +78,38 @@ function KeyResults({ results, selectedCount = 0 }: KeyResultsProps) {
                   sx={{ columnGap: 1, rowGap: 1 }}
                   alignItems="center"
                 >
-                  {availableChords.map((chord, i) => (
-                    <Chip
-                      key={i}
-                      label={`${chord.root}${
-                        chord.quality === "major"
-                          ? ""
-                          : chord.quality === "minor"
-                          ? "m"
-                          : "dim"
-                      } (${chord.degree})`}
-                      color="default"
-                      size="medium"
-                      sx={{ cursor: "default", m: 0.25 }}
-                    />
-                  ))}
+                  {availableChords.map((chord, i) => {
+                    const isSelected = selectedChords.some(
+                      (s) => s.root === chord.root && s.quality === chord.quality
+                    );
+                    return (
+                      <Chip
+                        key={i}
+                        label={`${chord.root}${
+                          chord.quality === "major"
+                            ? ""
+                            : chord.quality === "minor"
+                            ? "m"
+                            : "dim"
+                        } (${chord.degree})`}
+                        color={isSelected ? "primary" : "default"}
+                        size="medium"
+                        onClick={() => {
+                          // Compute the triad notes from this key's diatonic chords
+                          const rootIdx = chord.degree - 1;
+                          const thirdIdx = (rootIdx + 2) % availableChords.length;
+                          const fifthIdx = (rootIdx + 4) % availableChords.length;
+                          const triad = [
+                            availableChords[rootIdx].root,
+                            availableChords[thirdIdx].root,
+                            availableChords[fifthIdx].root,
+                          ];
+                          PianoPlayer.playChord(triad);
+                        }}
+                        sx={{ cursor: "pointer", m: 0.25 }}
+                      />
+                    );
+                  })}
                 </Stack>
               </CardContent>
             </Card>

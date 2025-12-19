@@ -1,6 +1,7 @@
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import type { Chord } from "../music/types";
+import PianoPlayer from "../music/PianoPlayer";
 
 /**
  * Props for ChordSelectorCircle component
@@ -74,8 +75,20 @@ function ChordSelectorCircle({
         );
         return (
           <IconButton
-            key={i}
-            onClick={() => onSelect(chord)}
+              key={i}
+              onClick={() => {
+                // compute triad notes from the diatonicChords array using degree
+                const rootIdx = chord.degree - 1;
+                const thirdIdx = (rootIdx + 2) % diatonicChords.length;
+                const fifthIdx = (rootIdx + 4) % diatonicChords.length;
+                const triad = [
+                  diatonicChords[rootIdx].root,
+                  diatonicChords[thirdIdx].root,
+                  diatonicChords[fifthIdx].root,
+                ];
+                PianoPlayer.playChord(triad);
+                onSelect(chord);
+              }}
             sx={{
               position: "absolute",
               left: x - btnSize / 2,

@@ -19,6 +19,8 @@ import ComputerIcon from "@mui/icons-material/Computer";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import type { Note, Mode, Chord } from "./music/types";
 import {
   buildDiatonicChords,
@@ -28,6 +30,7 @@ import {
 import CircleOfFifths from "./components/CircleOfFifths";
 import ChordTable from "./components/ChordTable";
 import KeyResults from "./components/KeyResults";
+import PianoPlayer from "./music/PianoPlayer";
 
 /**
  * Main application component: chord selection, analysis, and results display
@@ -51,6 +54,24 @@ export function App() {
     () => createTheme({ palette: { mode: effectiveMode } }),
     [effectiveMode]
   );
+
+  const [muted, setMuted] = useState<boolean>(() => {
+    try {
+      const v = localStorage.getItem("diato.muted");
+      return v === "1" ? true : v === "0" ? false : false;
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    PianoPlayer.setMuted(muted);
+    try {
+      localStorage.setItem("diato.muted", muted ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }, [muted]);
 
   useEffect(() => {
     try {
@@ -125,6 +146,29 @@ export function App() {
           </Typography>
           <Box sx={{ flex: 1 }} />
           <Box display="flex" alignItems="center">
+            <Tooltip title={muted ? "Unmute audio" : "Mute audio"}>
+              <IconButton
+                aria-label={muted ? "Unmute" : "Mute"}
+                onClick={() => setMuted((m) => !m)}
+                sx={{
+                  color: "inherit",
+                  p: 0,
+                  minWidth: "auto",
+                  fontSize: 28,
+                  lineHeight: 1,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mr: 1,
+                }}
+              >
+                {muted ? (
+                  <VolumeOffIcon fontSize="inherit" />
+                ) : (
+                  <VolumeUpIcon fontSize="inherit" />
+                )}
+              </IconButton>
+            </Tooltip>
             <Tooltip
               title={
                 <Box sx={{ maxWidth: 420 }}>
@@ -332,11 +376,24 @@ export function App() {
                         key={idx}
                         label={label}
                         onClick={() => {
+                          try {
+                            // Play this diatonic triad from the currently selected key
+                            const rootIdx = idx; // position in diatonicChords
+                            const thirdIdx = (rootIdx + 2) % diatonicChords.length;
+                            const fifthIdx = (rootIdx + 4) % diatonicChords.length;
+                            const triad = [
+                              diatonicChords[rootIdx].root,
+                              diatonicChords[thirdIdx].root,
+                              diatonicChords[fifthIdx].root,
+                            ];
+                            PianoPlayer.playChord(triad);
+                          } catch (err) {
+                            console.warn("App: diatonic playback failed", err);
+                          }
+
                           setSelectedByKey((selected) =>
                             selected.some(
-                              (s) =>
-                                s.root === chord.root &&
-                                s.quality === chord.quality
+                              (s) => s.root === chord.root && s.quality === chord.quality
                             )
                               ? selected.filter(
                                   (s) =>
@@ -391,7 +448,11 @@ export function App() {
             />
           )}
         </Box>
-        <KeyResults results={results} selectedCount={activeSelected.length} />
+        <KeyResults
+          results={results}
+          selectedCount={activeSelected.length}
+          selectedChords={activeSelected}
+        />
       </Container>
     </ThemeProvider>
   );

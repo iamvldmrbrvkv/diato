@@ -1,0 +1,202 @@
+import Soundfont from "soundfont-player";
+
+/**
+ * Simple singleton piano player built on top of soundfont-player.
+ * - Loads `acoustic_grand_piano` instrument.
+ * - Plays polyphonic chords (all notes at once).
+ * - Stops previous sounds with a short fade-out to avoid clicks.
+ */
+
+/**
+ * Node returned by soundfont-player when playing a note. It may be an
+ * AudioBufferSourceNode or an object exposing a `stop()` method.
+ */
+type PlayedNode = AudioBufferSourceNode | { stop: () => void };
+
+/** Minimal interface for the soundfont-player instrument used here. */
+interface SFInstrument {
+  play(
+    note: string,
+    when?: number,
+    options?: { duration?: number; destination?: AudioNode }
+  ): PlayedNode;
+}
+
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
+function normalizeNote(note: string) {
+  // Convert Unicode flats/sharps to ASCII and append octave 4 if none present.
+  // Use explicit Unicode codepoints to avoid source-encoding issues.
+  const n = note.replace(/\u266d/g, "b").replace(/\u266f/g, "#");
+  // If note already contains a digit (octave), return as-is
+  if (/\d/.test(n)) return n;
+  return `${n}4`;
+}
+
+class PianoPlayerClass {
+  private audioCtx: AudioContext | null = null;
+  private instrument: SFInstrument | null = null;
+  private masterGain: GainNode | null = null;
+  private playingNodes: PlayedNode[] = [];
+  private sequenceTimers: number[] = [];
+  private sequenceToken = 0;
+  private loading: Promise<void> | null = null;
+  private muted = false;
+
+  private clearSequenceTimers() {
+    for (const t of this.sequenceTimers) {
+      try {
+        clearTimeout(t);
+      } catch (err) {
+        console.warn("PianoPlayer: clearTimeout failed", err);
+      }
+    }
+    this.sequenceTimers = [];
+    // bump token to invalidate any already-scheduled callbacks
+    this.sequenceToken += 1;
+  }
+
+  async ensureLoaded() {
+    if (this.instrument && this.audioCtx) return;
+    if (this.loading) return this.loading;
+    this.loading = (async () => {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      this.audioCtx = new AC();
+      this.masterGain = this.audioCtx.createGain();
+      this.masterGain.gain.value = 1;
+      this.masterGain.connect(this.audioCtx.destination);
+      // soundfont-player has loose typings; coerce to our interface
+      this.instrument = (await Soundfont.instrument(
+        this.audioCtx,
+        "acoustic_grand_piano"
+      )) as SFInstrument;
+    })();
+    return this.loading;
+  }
+
+  /**
+   * Play a chord (array of note names like C, F#, B♭). Polyphonic: all notes start together.
+   * durationMs: how long to let the sample play (defaults to 1400ms)
+   */
+  async playChord(noteNames: string[], durationMs = 1400, fadeMs = 60) {
+    if (this.muted) return;
+    await this.ensureLoaded();
+    if (!this.instrument || !this.audioCtx || !this.masterGain) return;
+
+    // Stop existing sounds with fade (also clears pending sequences)
+    this.stopAll(fadeMs);
+
+    const now = this.audioCtx.currentTime;
+    const durationSec = Math.max(0.05, durationMs / 1000);
+    const nodes: PlayedNode[] = [];
+
+    for (const n of noteNames) {
+      const nn = normalizeNote(n);
+      try {
+        // soundfont-player supports passing a destination in options; route through masterGain.
+        const node = this.instrument.play(nn, now, {
+          duration: durationSec,
+          destination: this.masterGain,
+        });
+        if (node && typeof (node as PlayedNode).stop === "function") {
+          nodes.push(node as PlayedNode);
+        }
+      } catch (err) {
+        console.warn("PianoPlayer: play failed for", nn, err);
+      }
+    }
+    this.playingNodes = nodes;
+
+    // Schedule cleanup after the note duration + small margin
+    setTimeout(() => {
+      for (const node of this.playingNodes) {
+        try {
+          if (typeof (node as PlayedNode).stop === "function") {
+            (node as PlayedNode).stop();
+          }
+        } catch (err) {
+          console.warn("PianoPlayer: stop failed", err);
+        }
+      }
+      this.playingNodes = [];
+      // ensure master gain restored
+      if (this.masterGain && this.audioCtx)
+        this.masterGain.gain.setValueAtTime(1, this.audioCtx.currentTime + 0.001);
+    }, durationMs + 200);
+  }
+
+  /**
+   * Play a sequence of chords (array of note arrays), one after another.
+   * Each chord plays for `perChordMs` milliseconds.
+   */
+  async playSequence(chords: string[][], perChordMs = 900, fadeMs = 60) {
+    if (this.muted) return;
+    await this.ensureLoaded();
+    if (!this.audioCtx) return;
+    // Stop any current and clear previous sequence timers
+    this.stopAll(fadeMs);
+    this.clearSequenceTimers();
+    const myToken = this.sequenceToken;
+    let delay = 0;
+    for (const chord of chords) {
+      const timer = window.setTimeout(() => {
+        // if token changed, this sequence was cancelled
+        if (myToken !== this.sequenceToken) return;
+        this.playChord(chord, perChordMs, fadeMs);
+      }, delay) as unknown as number;
+      this.sequenceTimers.push(timer);
+      delay += perChordMs;
+    }
+  }
+
+  /** Stop all currently playing notes with a short fade-out */
+  stopAll(fadeMs = 60) {
+    if (!this.masterGain || !this.audioCtx) return;
+    const now = this.audioCtx.currentTime;
+    try {
+      this.masterGain.gain.cancelScheduledValues(now);
+      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+      this.masterGain.gain.linearRampToValueAtTime(0.0001, now + fadeMs / 1000);
+    } catch (err) {
+      console.warn("PianoPlayer: gain scheduling failed", err);
+    }
+    // stop nodes after fade
+    const nodes = this.playingNodes.slice();
+    setTimeout(() => {
+      for (const n of nodes) {
+        try {
+          if (typeof (n as PlayedNode).stop === "function") {
+            (n as PlayedNode).stop();
+          }
+        } catch (err) {
+          console.warn("PianoPlayer: node stop failed", err);
+        }
+      }
+      this.playingNodes = [];
+      if (this.masterGain && this.audioCtx) {
+        // restore gain quickly after fade to be ready for next notes
+        this.masterGain.gain.setValueAtTime(1, this.audioCtx.currentTime + 0.01);
+      }
+    }, fadeMs + 8);
+  }
+
+  /** Mute or unmute the player. When muted, playback is suppressed and current
+   * sounds are stopped. */
+  setMuted(v: boolean) {
+    this.muted = !!v;
+    if (this.muted) {
+      try {
+        this.stopAll(40);
+      } catch (err) {
+        console.warn("PianoPlayer: stopAll failed during mute", err);
+      }
+    }
+  }
+}
+
+const PianoPlayer = new PianoPlayerClass();
+export default PianoPlayer;

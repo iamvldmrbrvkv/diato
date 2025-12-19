@@ -1,6 +1,9 @@
 import { Box, IconButton, Chip, Typography, Stack } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import type { Chord } from "../music/types";
+import PianoPlayer from "../music/PianoPlayer";
+import { getAllAllowedKeys } from "../music/keys";
+import { buildDiatonicChords } from "../music/logic";
 
 export interface ChordTableProps {
   triads: Chord[];
@@ -55,7 +58,34 @@ export function ChordTable({
             <Chip
               key={i}
               label={label}
-              onClick={() => onToggle(t)}
+              onClick={() => {
+                try {
+                  // Try to find a diatonic context (a key) where this triad exists
+                  const keys = getAllAllowedKeys();
+                  for (const k of keys) {
+                    const diat = buildDiatonicChords(k);
+                    const match = diat.find(
+                      (ch) => ch.root === t.root && ch.quality === t.quality
+                    );
+                    if (match) {
+                      const rootIdx = match.degree - 1;
+                      const thirdIdx = (rootIdx + 2) % diat.length;
+                      const fifthIdx = (rootIdx + 4) % diat.length;
+                      const triad = [
+                        diat[rootIdx].root,
+                        diat[thirdIdx].root,
+                        diat[fifthIdx].root,
+                      ];
+                      PianoPlayer.playChord(triad);
+                      break;
+                    }
+                  }
+                  // If no diatonic context found, do not attempt chromatic fallback.
+                } catch (err) {
+                  console.warn("ChordTable: playback failed", err);
+                }
+                onToggle(t);
+              }}
               color={selected ? "primary" : "default"}
               size="medium"
               sx={{ cursor: "pointer", m: 0.25 }}
