@@ -3,6 +3,12 @@
 - All code must have English jsdoc comments for every function and component.
 - For debugging and result verification, always open MCP Chrome DevTools and check the result visually.
 
+### Coding Style Rules
+
+- Never use inline single-line comments starting with `//` in generated code. Use JSDoc-style comments for documentation instead.
+- Never leave empty `catch` blocks; always handle or log errors inside `catch` blocks.
+- Ensure every function and component has an English JSDoc comment describing purpose, parameters, and return value.
+
 ## Application Logic
 
 This is a React + TypeScript + MUI web application for diatonic harmony analysis without modulations.

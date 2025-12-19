@@ -86,22 +86,17 @@ class PianoPlayerClass {
       this.masterGain = this.audioCtx.createGain();
       this.masterGain.gain.value = 10;
       this.masterGain.connect(this.audioCtx.destination);
-      // Create a MediaStream destination and bridge it to an <audio>
       try {
         this.mediaStreamDest = this.audioCtx.createMediaStreamDestination();
-        // connect master gain to the stream destination so the same audio
-        // is also available via an HTMLAudioElement which is more robust
-        // for background playback on some Safari/iOS versions.
         this.masterGain.connect(this.mediaStreamDest);
-        // create or reuse an audio element to play the stream
+
         if (!this.audioElement) this.audioElement = new Audio();
         this.audioElement.autoplay = true;
-        // assign stream and try to play (may require a gesture)
+
         try {
           this.audioElement.srcObject = this.mediaStreamDest.stream;
           void this.audioElement.play();
         } catch (err) {
-          // play can fail if there was no user gesture; that's acceptable
           console.debug("PianoPlayer: audioElement.play() failed", err);
         }
       } catch (err) {
@@ -122,7 +117,6 @@ class PianoPlayerClass {
   private isActuallyPlaying() {
     return this.playingNodes.length > 0 || this.sequenceTimers.length > 0;
   }
-
 
   /**
    * Visibility change handler. When the document becomes hidden, proactively
@@ -166,21 +160,18 @@ class PianoPlayerClass {
     try {
       if (this.isRecreating) return;
       if (!this.audioCtx) {
-        // No context — ensureLoaded will create one and load instrument.
-        this.instrument = null; // force reload of instrument
+        this.instrument = null;
         await this.ensureLoaded();
         console.debug("PianoPlayer: recreated audioCtx via ensureLoaded");
         return;
       }
 
-      // Try a simple resume first
       try {
         await this.audioCtx.resume();
       } catch (err) {
         console.debug("PianoPlayer: audioCtx.resume() threw", err);
       }
 
-      // Wait a short moment to let state settle
       await new Promise((r) => setTimeout(r, 220));
 
       if (this.audioCtx.state === "running") {
@@ -188,22 +179,23 @@ class PianoPlayerClass {
         return;
       }
 
-      // Failed to resume — recreate the AudioContext and instrument.
       this.isRecreating = true;
       try {
         await this.audioCtx.close();
       } catch (err) {
         console.warn("PianoPlayer: audioCtx.close() failed", err);
       }
-      // clear any existing audio element src before dropping the context
       try {
         if (this.audioElement) this.audioElement.srcObject = null;
       } catch (err) {
-        console.error("PianoPlayer: clearing audioElement.srcObject failed", err);
+        console.error(
+          "PianoPlayer: clearing audioElement.srcObject failed",
+          err
+        );
       }
       this.audioCtx = null;
-      this.instrument = null; // force reload
-      // Debounce recreation slightly to avoid thrash on rapid visibility changes
+      this.instrument = null;
+
       if (this.recreateTimeoutId) {
         clearTimeout(this.recreateTimeoutId);
         this.recreateTimeoutId = null;
@@ -211,7 +203,6 @@ class PianoPlayerClass {
       this.recreateTimeoutId = window.setTimeout(async () => {
         try {
           await this.ensureLoaded();
-          // if we recreated the context, make sure audioElement is hooked
           try {
             if (this.mediaStreamDest && this.audioElement) {
               this.audioElement.srcObject = this.mediaStreamDest.stream;
