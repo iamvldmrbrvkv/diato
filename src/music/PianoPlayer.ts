@@ -38,6 +38,8 @@ function normalizeNote(note: string) {
 class PianoPlayerClass {
   private isRecreating = false;
   private recreateTimeoutId: number | null = null;
+  private mediaStreamDest: MediaStreamAudioDestinationNode | null = null;
+  private audioElement: HTMLAudioElement | null = null;
   private audioCtx: AudioContext | null = null;
   private instrument: SFInstrument | null = null;
   private masterGain: GainNode | null = null;
@@ -84,6 +86,28 @@ class PianoPlayerClass {
       this.masterGain = this.audioCtx.createGain();
       this.masterGain.gain.value = 10;
       this.masterGain.connect(this.audioCtx.destination);
+      // Create a MediaStream destination and bridge it to an <audio>
+      try {
+        this.mediaStreamDest = this.audioCtx.createMediaStreamDestination();
+        // connect master gain to the stream destination so the same audio
+        // is also available via an HTMLAudioElement which is more robust
+        // for background playback on some Safari/iOS versions.
+        this.masterGain.connect(this.mediaStreamDest);
+        // create or reuse an audio element to play the stream
+        if (!this.audioElement) this.audioElement = new Audio();
+        this.audioElement.autoplay = true;
+        // assign stream and try to play (may require a gesture)
+        try {
+          this.audioElement.srcObject = this.mediaStreamDest.stream;
+          void this.audioElement.play();
+        } catch (err) {
+          // play can fail if there was no user gesture; that's acceptable
+          console.debug("PianoPlayer: audioElement.play() failed", err);
+        }
+      } catch (err) {
+        console.debug("PianoPlayer: mediaStream bridge not available", err);
+        this.mediaStreamDest = null;
+      }
       this.instrument = (await Soundfont.instrument(
         this.audioCtx,
         "acoustic_grand_piano"
@@ -171,6 +195,12 @@ class PianoPlayerClass {
       } catch (err) {
         console.warn("PianoPlayer: audioCtx.close() failed", err);
       }
+      // clear any existing audio element src before dropping the context
+      try {
+        if (this.audioElement) this.audioElement.srcObject = null;
+      } catch (err) {
+        console.error("PianoPlayer: clearing audioElement.srcObject failed", err);
+      }
       this.audioCtx = null;
       this.instrument = null; // force reload
       // Debounce recreation slightly to avoid thrash on rapid visibility changes
@@ -181,6 +211,15 @@ class PianoPlayerClass {
       this.recreateTimeoutId = window.setTimeout(async () => {
         try {
           await this.ensureLoaded();
+          // if we recreated the context, make sure audioElement is hooked
+          try {
+            if (this.mediaStreamDest && this.audioElement) {
+              this.audioElement.srcObject = this.mediaStreamDest.stream;
+              void this.audioElement.play();
+            }
+          } catch (err) {
+            console.debug("PianoPlayer: reconnect audioElement failed", err);
+          }
           console.debug("PianoPlayer: audioCtx recreated after resume failure");
         } catch (err) {
           console.warn("PianoPlayer: recreate failed", err);
