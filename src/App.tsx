@@ -281,7 +281,15 @@ export function App() {
               _: MouseEvent<HTMLElement>,
               v: "byKey" | "free" | null
             ) => {
-              if (v) setViewMode(v);
+              if (v) {
+                try {
+                  // stop any playing sequence/chord when switching views
+                  PianoPlayer.stopAll(100);
+                } catch {
+                  /* ignore */
+                }
+                setViewMode(v);
+              }
             }}
             size="small"
             fullWidth
@@ -376,7 +384,13 @@ export function App() {
                         key={idx}
                         label={label}
                         onClick={() => {
-                          try {
+                            try {
+                              // stop any previous playback immediately
+                              PianoPlayer.stopAll(100);
+                            } catch {
+                              /* ignore */
+                            }
+                            try {
                             // Play this diatonic triad from the currently selected key
                             const rootIdx = idx; // position in diatonicChords
                             const thirdIdx = (rootIdx + 2) % diatonicChords.length;

@@ -95,6 +95,12 @@ function KeyResults({
                         color={isSelected ? "primary" : "default"}
                         size="medium"
                         onClick={() => {
+                          try {
+                            // stop any currently-playing sequence or chord immediately
+                            PianoPlayer.stopAll(100);
+                          } catch {
+                            /* ignore */
+                          }
                           // Compute the triad notes from this key's diatonic chords
                           const rootIdx = chord.degree - 1;
                           const thirdIdx = (rootIdx + 2) % availableChords.length;

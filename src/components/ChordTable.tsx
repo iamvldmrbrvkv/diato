@@ -76,6 +76,12 @@ export function ChordTable({
                         diat[thirdIdx].root,
                         diat[fifthIdx].root,
                       ];
+                      try {
+                        // stop any currently-playing sequence or chord immediately
+                        PianoPlayer.stopAll(100);
+                      } catch {
+                        /* ignore */
+                      }
                       PianoPlayer.playChord(triad);
                       break;
                     }

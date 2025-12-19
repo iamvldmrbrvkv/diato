@@ -112,13 +112,19 @@ const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   const scale = buildScale(tonic, "Ionian");
-                  if (scale && scale.length === 7) {
+                    if (scale && scale.length === 7) {
                     const chords = Array.from({ length: 7 }).map((_, idx) => {
                       const rootIdx = idx;
                       const thirdIdx = (rootIdx + 2) % 7;
                       const fifthIdx = (rootIdx + 4) % 7;
                       return [scale[rootIdx], scale[thirdIdx], scale[fifthIdx]] as string[];
                     });
+                    try {
+                      // stop any previous playback immediately before scheduling a new sequence
+                      PianoPlayer.stopAll(100);
+                    } catch {
+                      /* ignore */
+                    }
                     PianoPlayer.playSequence(chords, 900, 60);
                   }
                   onSelect(tonic, "Ionian");
@@ -160,13 +166,19 @@ const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   const scale = buildScale(tonic, "Aeolian");
-                  if (scale && scale.length === 7) {
+                    if (scale && scale.length === 7) {
                     const chords = Array.from({ length: 7 }).map((_, idx) => {
                       const rootIdx = idx;
                       const thirdIdx = (rootIdx + 2) % 7;
                       const fifthIdx = (rootIdx + 4) % 7;
                       return [scale[rootIdx], scale[thirdIdx], scale[fifthIdx]] as string[];
                     });
+                    try {
+                      // stop any previous playback immediately before scheduling a new sequence
+                      PianoPlayer.stopAll(100);
+                    } catch {
+                      /* ignore */
+                    }
                     PianoPlayer.playSequence(chords, 900, 60);
                   }
                   onSelect(tonic, "Aeolian");
