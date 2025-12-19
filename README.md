@@ -40,6 +40,18 @@ npm run dev
    and available chords remaining in each matched key.
 5. Use the theme icon in the header to cycle between system / light / dark modes.
 
+## Audio playback
+
+- When you select a tonic on the circle of fifths, the app can play a short
+   harmony for that key (a brief sequence of its diatonic triads). This helps
+   you hear how the key sounds and how its diatonic chords relate.
+- You can also play any individual triad by clicking it in the diatonic list
+   (By Key) or the triad table (Free). Use the mute button in the header to
+   silence audio immediately.
+ 
+The app uses the Web Audio API (soundfont playback) to render the triads locally
+in the browser.
+
 ## Intended audience
 
 - Beginners and students learning basic diatonic harmony.

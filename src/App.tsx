@@ -68,16 +68,16 @@ export function App() {
     PianoPlayer.setMuted(muted);
     try {
       localStorage.setItem("diato.muted", muted ? "1" : "0");
-    } catch {
-      /* ignore */
+    } catch (err) {
+      console.warn("App: save muted failed", err);
     }
   }, [muted]);
 
   useEffect(() => {
     try {
       localStorage.setItem("diato.theme", themePref);
-    } catch {
-      /* ignore */
+    } catch (err) {
+      console.warn("App: save theme failed", err);
     }
   }, [themePref]);
 
@@ -110,6 +110,29 @@ export function App() {
   const handleReset = () => {
     if (viewMode === "byKey") setSelectedByKey([]);
     else setSelectedFree([]);
+  };
+
+  /**
+   * Toggle a chord in the By-Key selection set and return whether it became selected.
+   * This mirrors the `onToggle` contract used by `ChordTable` so callers can
+   * decide to play audio only when a chord was newly selected.
+   */
+  const handleToggleByKey = (chord: Chord) => {
+    let becameSelected = false;
+    setSelectedByKey((selected) => {
+      const exists = selected.some(
+        (s) => s.root === chord.root && s.quality === chord.quality
+      );
+      if (exists) {
+        becameSelected = false;
+        return selected.filter(
+          (s) => !(s.root === chord.root && s.quality === chord.quality)
+        );
+      }
+      becameSelected = true;
+      return [...selected, chord];
+    });
+    return becameSelected;
   };
 
   /** Cycle theme preference: system -> light -> dark -> system. */
@@ -174,8 +197,11 @@ export function App() {
                 <Box sx={{ maxWidth: 420 }}>
                   <Typography variant="body2">
                     This app helps you discover keys and diatonic chords from a
-                    small set of chosen triads - useful when you're starting to
-                    write music and want harmony suggestions.
+                    small set of chosen triads — useful when you're starting to
+                    write music and want harmony suggestions. When you select a
+                    tonic on the circle you can play the harmony for that key
+                    (a short sequence of its diatonic triads). You can also
+                    play any individual triad by clicking it.
                   </Typography>
 
                   <Typography variant="body2" sx={{ mt: 1, fontWeight: 600 }}>
@@ -283,10 +309,12 @@ export function App() {
             ) => {
               if (v) {
                 try {
-                  // stop any playing sequence/chord when switching views
-                  PianoPlayer.stopAll(100);
-                } catch {
-                  /* ignore */
+                  PianoPlayer.stopSequence(40);
+                } catch (err) {
+                  console.warn(
+                    "App: stopSequence failed when switching view",
+                    err
+                  );
                 }
                 setViewMode(v);
               }
@@ -384,40 +412,32 @@ export function App() {
                         key={idx}
                         label={label}
                         onClick={() => {
+                          const becameSelected = handleToggleByKey(chord);
+                          if (becameSelected) {
                             try {
-                              // stop any previous playback immediately
-                              PianoPlayer.stopAll(100);
-                            } catch {
-                              /* ignore */
+                              PianoPlayer.stopSequence(40);
+                            } catch (err) {
+                              console.warn("App: stopSequence failed", err);
                             }
                             try {
-                            // Play this diatonic triad from the currently selected key
-                            const rootIdx = idx; // position in diatonicChords
-                            const thirdIdx = (rootIdx + 2) % diatonicChords.length;
-                            const fifthIdx = (rootIdx + 4) % diatonicChords.length;
-                            const triad = [
-                              diatonicChords[rootIdx].root,
-                              diatonicChords[thirdIdx].root,
-                              diatonicChords[fifthIdx].root,
-                            ];
-                            PianoPlayer.playChord(triad);
-                          } catch (err) {
-                            console.warn("App: diatonic playback failed", err);
+                              const rootIdx = idx;
+                              const thirdIdx =
+                                (rootIdx + 2) % diatonicChords.length;
+                              const fifthIdx =
+                                (rootIdx + 4) % diatonicChords.length;
+                              const triad = [
+                                diatonicChords[rootIdx].root,
+                                diatonicChords[thirdIdx].root,
+                                diatonicChords[fifthIdx].root,
+                              ];
+                              PianoPlayer.playChord(triad);
+                            } catch (err) {
+                              console.warn(
+                                "App: diatonic playback failed",
+                                err
+                              );
+                            }
                           }
-
-                          setSelectedByKey((selected) =>
-                            selected.some(
-                              (s) => s.root === chord.root && s.quality === chord.quality
-                            )
-                              ? selected.filter(
-                                  (s) =>
-                                    !(
-                                      s.root === chord.root &&
-                                      s.quality === chord.quality
-                                    )
-                                )
-                              : [...selected, chord]
-                          );
                         }}
                         color={isSelected ? "primary" : "default"}
                         size="medium"
@@ -445,18 +465,22 @@ export function App() {
               triads={buildAllTriads()}
               selectedChords={selectedFree}
               onToggle={(chord) => {
-                setSelectedFree((selected) =>
-                  selected.some(
+                let becameSelected = false;
+                setSelectedFree((selected) => {
+                  const exists = selected.some(
                     (s) => s.root === chord.root && s.quality === chord.quality
-                  )
-                    ? selected.filter(
-                        (s) =>
-                          !(
-                            s.root === chord.root && s.quality === chord.quality
-                          )
-                      )
-                    : [...selected, chord]
-                );
+                  );
+                  if (exists) {
+                    becameSelected = false;
+                    return selected.filter(
+                      (s) =>
+                        !(s.root === chord.root && s.quality === chord.quality)
+                    );
+                  }
+                  becameSelected = true;
+                  return [...selected, chord];
+                });
+                return becameSelected;
               }}
               onReset={handleReset}
             />

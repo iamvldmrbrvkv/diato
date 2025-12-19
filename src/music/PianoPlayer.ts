@@ -29,10 +29,8 @@ declare global {
 }
 
 function normalizeNote(note: string) {
-  // Convert Unicode flats/sharps to ASCII and append octave 4 if none present.
-  // Use explicit Unicode codepoints to avoid source-encoding issues.
   const n = note.replace(/\u266d/g, "b").replace(/\u266f/g, "#");
-  // If note already contains a digit (octave), return as-is
+
   if (/\d/.test(n)) return n;
   return `${n}4`;
 }
@@ -56,7 +54,6 @@ class PianoPlayerClass {
       }
     }
     this.sequenceTimers = [];
-    // bump token to invalidate any already-scheduled callbacks
     this.sequenceToken += 1;
   }
 
@@ -67,9 +64,8 @@ class PianoPlayerClass {
       const AC = window.AudioContext || window.webkitAudioContext;
       this.audioCtx = new AC();
       this.masterGain = this.audioCtx.createGain();
-      this.masterGain.gain.value = 1;
+      this.masterGain.gain.value = 10;
       this.masterGain.connect(this.audioCtx.destination);
-      // soundfont-player has loose typings; coerce to our interface
       this.instrument = (await Soundfont.instrument(
         this.audioCtx,
         "acoustic_grand_piano"
@@ -87,7 +83,6 @@ class PianoPlayerClass {
     await this.ensureLoaded();
     if (!this.instrument || !this.audioCtx || !this.masterGain) return;
 
-    // Stop existing sounds with fade (also clears pending sequences)
     this.stopAll(fadeMs);
 
     const now = this.audioCtx.currentTime;
@@ -97,7 +92,6 @@ class PianoPlayerClass {
     for (const n of noteNames) {
       const nn = normalizeNote(n);
       try {
-        // soundfont-player supports passing a destination in options; route through masterGain.
         const node = this.instrument.play(nn, now, {
           duration: durationSec,
           destination: this.masterGain,
@@ -111,7 +105,6 @@ class PianoPlayerClass {
     }
     this.playingNodes = nodes;
 
-    // Schedule cleanup after the note duration + small margin
     setTimeout(() => {
       for (const node of this.playingNodes) {
         try {
@@ -123,9 +116,11 @@ class PianoPlayerClass {
         }
       }
       this.playingNodes = [];
-      // ensure master gain restored
       if (this.masterGain && this.audioCtx)
-        this.masterGain.gain.setValueAtTime(1, this.audioCtx.currentTime + 0.001);
+        this.masterGain.gain.setValueAtTime(
+          1,
+          this.audioCtx.currentTime + 0.001
+        );
     }, durationMs + 200);
   }
 
@@ -137,19 +132,35 @@ class PianoPlayerClass {
     if (this.muted) return;
     await this.ensureLoaded();
     if (!this.audioCtx) return;
-    // Stop any current and clear previous sequence timers
     this.stopAll(fadeMs);
     this.clearSequenceTimers();
     const myToken = this.sequenceToken;
     let delay = 0;
     for (const chord of chords) {
       const timer = window.setTimeout(() => {
-        // if token changed, this sequence was cancelled
         if (myToken !== this.sequenceToken) return;
         this.playChord(chord, perChordMs, fadeMs);
       }, delay) as unknown as number;
       this.sequenceTimers.push(timer);
       delay += perChordMs;
+    }
+  }
+
+  /**
+   * Cancel any pending scheduled sequence callbacks and stop currently
+   * playing notes with an optional short fade.
+   * This stops future scheduled chords from starting after cancellation.
+   */
+  stopSequence(fadeMs = 60) {
+    try {
+      this.clearSequenceTimers();
+    } catch (err) {
+      console.warn("PianoPlayer: clearSequenceTimers failed", err);
+    }
+    try {
+      this.stopAll(fadeMs);
+    } catch (err) {
+      console.warn("PianoPlayer: stopAll failed in stopSequence", err);
     }
   }
 
@@ -164,7 +175,6 @@ class PianoPlayerClass {
     } catch (err) {
       console.warn("PianoPlayer: gain scheduling failed", err);
     }
-    // stop nodes after fade
     const nodes = this.playingNodes.slice();
     setTimeout(() => {
       for (const n of nodes) {
@@ -178,8 +188,10 @@ class PianoPlayerClass {
       }
       this.playingNodes = [];
       if (this.masterGain && this.audioCtx) {
-        // restore gain quickly after fade to be ready for next notes
-        this.masterGain.gain.setValueAtTime(1, this.audioCtx.currentTime + 0.01);
+        this.masterGain.gain.setValueAtTime(
+          1,
+          this.audioCtx.currentTime + 0.01
+        );
       }
     }, fadeMs + 8);
   }
@@ -190,9 +202,9 @@ class PianoPlayerClass {
     this.muted = !!v;
     if (this.muted) {
       try {
-        this.stopAll(40);
+        this.stopSequence(40);
       } catch (err) {
-        console.warn("PianoPlayer: stopAll failed during mute", err);
+        console.warn("PianoPlayer: stopSequence failed during mute", err);
       }
     }
   }

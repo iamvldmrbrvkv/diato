@@ -8,7 +8,8 @@ import { buildDiatonicChords } from "../music/logic";
 export interface ChordTableProps {
   triads: Chord[];
   selectedChords: Chord[];
-  onToggle: (chord: Chord) => void;
+  /** Toggle callback: should return true if chord is selected after toggle. */
+  onToggle: (chord: Chord) => boolean;
   onReset: () => void;
 }
 
@@ -60,7 +61,6 @@ export function ChordTable({
               label={label}
               onClick={() => {
                 try {
-                  // Try to find a diatonic context (a key) where this triad exists
                   const keys = getAllAllowedKeys();
                   for (const k of keys) {
                     const diat = buildDiatonicChords(k);
@@ -76,21 +76,25 @@ export function ChordTable({
                         diat[thirdIdx].root,
                         diat[fifthIdx].root,
                       ];
+                      let becameSelected = true;
                       try {
-                        // stop any currently-playing sequence or chord immediately
-                        PianoPlayer.stopAll(100);
-                      } catch {
-                        /* ignore */
+                        becameSelected = onToggle ? onToggle(t) : true;
+                      } catch (err) {
+                        console.warn("ChordTable: onToggle failed", err);
+                      }
+                      if (!becameSelected) break;
+                      try {
+                        PianoPlayer.stopSequence(40);
+                      } catch (err) {
+                        console.warn("ChordTable: stopSequence failed", err);
                       }
                       PianoPlayer.playChord(triad);
                       break;
                     }
                   }
-                  // If no diatonic context found, do not attempt chromatic fallback.
                 } catch (err) {
                   console.warn("ChordTable: playback failed", err);
                 }
-                onToggle(t);
               }}
               color={selected ? "primary" : "default"}
               size="medium"

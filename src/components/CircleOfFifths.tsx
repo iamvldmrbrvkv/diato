@@ -24,9 +24,6 @@ export interface CircleOfFifthsProps {
 
 const SVG_SIZE = 520;
 const CENTER = SVG_SIZE / 2;
-// Compute radii relative to the SVG size so the circle fills the available viewport.
-// Use a very small inset (0.5px) to account for stroke thickness so the outer
-// sectors visually reach the SVG edges.
 const OUTER_RADIUS = Math.max(Math.floor(CENTER - 0.5), 0);
 const INNER_RADIUS = Math.max(Math.round(OUTER_RADIUS * 0.6), 16);
 const SECTORS = 12;
@@ -106,24 +103,27 @@ const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
             const end = ((i + 1) * 360) / SECTORS;
             const isSelected =
               selectedTonic === tonic && selectedMode === "Ionian";
-              return (
+            return (
               <g
                 key={tonic}
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   const scale = buildScale(tonic, "Ionian");
-                    if (scale && scale.length === 7) {
+                  if (scale && scale.length === 7) {
                     const chords = Array.from({ length: 7 }).map((_, idx) => {
                       const rootIdx = idx;
                       const thirdIdx = (rootIdx + 2) % 7;
                       const fifthIdx = (rootIdx + 4) % 7;
-                      return [scale[rootIdx], scale[thirdIdx], scale[fifthIdx]] as string[];
+                      return [
+                        scale[rootIdx],
+                        scale[thirdIdx],
+                        scale[fifthIdx],
+                      ] as string[];
                     });
                     try {
-                      // stop any previous playback immediately before scheduling a new sequence
-                      PianoPlayer.stopAll(100);
-                    } catch {
-                      /* ignore */
+                      PianoPlayer.stopSequence(40);
+                    } catch (err) {
+                      console.warn("CircleOfFifths: stopSequence failed", err);
                     }
                     PianoPlayer.playSequence(chords, 900, 60);
                   }
@@ -154,30 +154,34 @@ const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
               </g>
             );
           })}
+
           {/* Inner ring: minor (paths only) */}
           {MINOR_TONICS_ORDER.map((tonic, i) => {
             const start = (i * 360) / SECTORS;
             const end = ((i + 1) * 360) / SECTORS;
             const isSelected =
               selectedTonic === tonic && selectedMode === "Aeolian";
-              return (
+            return (
               <g
                 key={tonic}
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   const scale = buildScale(tonic, "Aeolian");
-                    if (scale && scale.length === 7) {
+                  if (scale && scale.length === 7) {
                     const chords = Array.from({ length: 7 }).map((_, idx) => {
                       const rootIdx = idx;
                       const thirdIdx = (rootIdx + 2) % 7;
                       const fifthIdx = (rootIdx + 4) % 7;
-                      return [scale[rootIdx], scale[thirdIdx], scale[fifthIdx]] as string[];
+                      return [
+                        scale[rootIdx],
+                        scale[thirdIdx],
+                        scale[fifthIdx],
+                      ] as string[];
                     });
                     try {
-                      // stop any previous playback immediately before scheduling a new sequence
-                      PianoPlayer.stopAll(100);
-                    } catch {
-                      /* ignore */
+                      PianoPlayer.stopSequence(40);
+                    } catch (err) {
+                      console.warn("CircleOfFifths: stopSequence failed", err);
                     }
                     PianoPlayer.playSequence(chords, 900, 60);
                   }
@@ -201,6 +205,7 @@ const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
               </g>
             );
           })}
+
           {/* Center circle for spacing */}
           <circle
             cx={CENTER}

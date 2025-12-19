@@ -80,7 +80,8 @@ function KeyResults({
                 >
                   {availableChords.map((chord, i) => {
                     const isSelected = selectedChords.some(
-                      (s) => s.root === chord.root && s.quality === chord.quality
+                      (s) =>
+                        s.root === chord.root && s.quality === chord.quality
                     );
                     return (
                       <Chip
@@ -96,15 +97,18 @@ function KeyResults({
                         size="medium"
                         onClick={() => {
                           try {
-                            // stop any currently-playing sequence or chord immediately
-                            PianoPlayer.stopAll(100);
-                          } catch {
-                            /* ignore */
+                              PianoPlayer.stopSequence(40);
+                          } catch (err) {
+                            console.warn(
+                              "KeyResults: stopSequence failed",
+                              err
+                            );
                           }
-                          // Compute the triad notes from this key's diatonic chords
                           const rootIdx = chord.degree - 1;
-                          const thirdIdx = (rootIdx + 2) % availableChords.length;
-                          const fifthIdx = (rootIdx + 4) % availableChords.length;
+                          const thirdIdx =
+                            (rootIdx + 2) % availableChords.length;
+                          const fifthIdx =
+                            (rootIdx + 4) % availableChords.length;
                           const triad = [
                             availableChords[rootIdx].root,
                             availableChords[thirdIdx].root,
