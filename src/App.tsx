@@ -15,6 +15,9 @@ import {
   IconButton,
 } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import ComputerIcon from "@mui/icons-material/Computer";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
@@ -33,9 +36,20 @@ import PianoPlayer from "./music/PianoPlayer";
  * Main application component: chord selection, analysis, and results display
  */
 export function App() {
-  // Use only system theme (no manual switching)
+  /** Theme preference: one of 'system' | 'light' | 'dark'. Stored in localStorage. */
   const prefersDark = useMediaQuery("(prefers-color-scheme: dark)");
-  const effectiveMode = prefersDark ? "dark" : "light";
+  const [themePref, setThemePref] = useState<"system" | "light" | "dark">(
+    () => {
+      try {
+        const v = localStorage.getItem("diato.theme");
+        return (v as "system" | "light" | "dark") || "system";
+      } catch {
+        return "system";
+      }
+    }
+  );
+  const effectiveMode =
+    themePref === "system" ? (prefersDark ? "dark" : "light") : themePref;
   const theme = useMemo(
     () => createTheme({ palette: { mode: effectiveMode } }),
     [effectiveMode]
@@ -59,7 +73,13 @@ export function App() {
     }
   }, [muted]);
 
-
+  useEffect(() => {
+    try {
+      localStorage.setItem("diato.theme", themePref);
+    } catch (err) {
+      console.warn("App: save theme failed", err);
+    }
+  }, [themePref]);
 
   /** State: selections are independent for each mode. */
   const [selectedByKey, setSelectedByKey] = useState<Chord[]>([]);
@@ -115,7 +135,14 @@ export function App() {
     return becameSelected;
   };
 
-
+  /** Cycle theme preference: system -> light -> dark -> system. */
+  const handleCycleClick = () => {
+    setThemePref((p) => {
+      if (p === "system") return "light";
+      if (p === "light") return "dark";
+      return "system";
+    });
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -215,7 +242,47 @@ export function App() {
                 <HelpOutlineIcon fontSize="inherit" />
               </IconButton>
             </Tooltip>
-
+            <Tooltip
+              title={
+                themePref === "system"
+                  ? effectiveMode === "dark"
+                    ? `System theme: dark (click to choose light)`
+                    : `System theme: light (click to choose dark)`
+                  : themePref === "light"
+                  ? "Light theme (click to switch to dark)"
+                  : "Dark theme (click to switch to system)"
+              }
+              arrow
+            >
+              <IconButton
+                aria-label={
+                  themePref === "system"
+                    ? "System theme"
+                    : themePref === "light"
+                    ? "Light theme"
+                    : "Dark theme"
+                }
+                onClick={handleCycleClick}
+                sx={{
+                  color: "inherit",
+                  p: 0,
+                  minWidth: "auto",
+                  fontSize: 28,
+                  lineHeight: 1,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {themePref === "system" ? (
+                  <ComputerIcon fontSize="inherit" />
+                ) : themePref === "light" ? (
+                  <LightModeIcon fontSize="inherit" />
+                ) : (
+                  <DarkModeIcon fontSize="inherit" />
+                )}
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
         <Box mb={2}>
