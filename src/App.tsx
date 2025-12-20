@@ -196,9 +196,9 @@ export function App() {
               title={
                 <Box sx={{ maxWidth: 420 }}>
                   <Typography variant="body2">
-                    Discover keys and diatonic triads from a small set of
-                    chosen triads. Select a tonic on the circle to hear that
-                    key's diatonic triads, or click any triad to play it.
+                    Discover keys and diatonic triads from a small set of chosen
+                    triads. Select a tonic on the circle to hear that key's
+                    diatonic triads, or click any triad to play it.
                   </Typography>
 
                   <Typography variant="body2" sx={{ mt: 1, fontWeight: 600 }}>
