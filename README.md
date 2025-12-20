@@ -1,6 +1,6 @@
 # Diato
 
-[Diato](https://diato-explorer.vercel.app/) is an interactive React + TypeScript web app that helps
+[Diato](https://diato-harmony.vercel.app/) is an interactive React + TypeScript web app that helps
 musicians discover keys and diatonic chords from a small set of chosen triads. Use the
 circle of fifths or the triad table to select chords and instantly see which
 Ionian (Major) and Aeolian (Natural Minor) keys contain those chords, plus which

@@ -3,13 +3,21 @@
   "short_name": "Diato",
   "description": "Diato - interactive circle of fifths and triad table for beginners and songwriters. Pick triads to find matching Ionian (Major) and Aeolian (Natural Minor) keys and available diatonic chords.",
   "start_url": "/",
-  "display": "standalone",
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone"
 }
