@@ -50,8 +50,16 @@ export function App() {
   );
   const effectiveMode =
     themePref === "system" ? (prefersDark ? "dark" : "light") : themePref;
+  /**
+   * MUI theme with CSS variables enabled to prevent dark/light mode flicker on iOS PWA.
+   * Uses colorSchemeSelector 'data' for compatibility with InitColorSchemeScript.
+   */
   const theme = useMemo(
-    () => createTheme({ palette: { mode: effectiveMode } }),
+    () =>
+      createTheme({
+        palette: { mode: effectiveMode },
+        cssVariables: { colorSchemeSelector: 'data' },
+      }),
     [effectiveMode]
   );
 
@@ -145,7 +153,7 @@ export function App() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme} defaultMode="system" noSsr disableTransitionOnChange>
       <CssBaseline />
       <Container maxWidth="sm" sx={{ minHeight: "100vh", py: 2 }}>
         <Box
