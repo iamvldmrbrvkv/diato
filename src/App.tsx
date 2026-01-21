@@ -64,6 +64,10 @@ export function App() {
     }
   });
 
+  /**
+   * Persists muted state to localStorage and updates PianoPlayer mute setting
+   * whenever the muted state changes.
+   */
   useEffect(() => {
     PianoPlayer.setMuted(muted);
     try {
@@ -73,6 +77,9 @@ export function App() {
     }
   }, [muted]);
 
+  /**
+   * Persists theme preference to localStorage whenever the theme preference changes.
+   */
   useEffect(() => {
     try {
       localStorage.setItem("diato.theme", themePref);
