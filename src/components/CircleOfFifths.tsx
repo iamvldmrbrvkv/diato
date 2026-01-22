@@ -12,9 +12,12 @@ import PianoPlayer from "../music/PianoPlayer";
 
 /**
  * Interactive SVG Circle of Fifths with two rings: major (outer), minor (inner).
- * @param onSelect (tonic, mode) => void - called when a sector is clicked
- * @param selectedTonic - currently selected tonic
- * @param selectedMode - currently selected mode
+ * Clicking a sector selects that key's tonic and mode, and plays a sequence
+ * of all seven diatonic triads from that key.
+ * @param onSelect Callback invoked when a sector is clicked with (tonic, mode) parameters
+ * @param selectedTonic Currently selected tonic note
+ * @param selectedMode Currently selected musical mode (Ionian or Aeolian)
+ * @returns React component displaying the interactive circle of fifths
  */
 export interface CircleOfFifthsProps {
   onSelect: (tonic: Note, mode: Mode) => void;
@@ -28,6 +31,15 @@ const OUTER_RADIUS = Math.max(Math.floor(CENTER - 0.5), 0);
 const INNER_RADIUS = Math.max(Math.round(OUTER_RADIUS * 0.6), 16);
 const SECTORS = 12;
 
+/**
+ * Convert polar coordinates (angle and radius) to Cartesian coordinates (x, y).
+ * Used for positioning elements in a circle.
+ * @param cx Center X coordinate
+ * @param cy Center Y coordinate
+ * @param r Radius from center
+ * @param angle Angle in degrees (0° = top, increasing clockwise)
+ * @returns Object with x and y coordinates
+ */
 function polarToCartesian(cx: number, cy: number, r: number, angle: number) {
   const a = ((angle - 90) * Math.PI) / 180.0;
   return {
@@ -36,7 +48,17 @@ function polarToCartesian(cx: number, cy: number, r: number, angle: number) {
   };
 }
 
-/** Return an SVG path string for a ring sector (area between r1 and r2). */
+/**
+ * Return an SVG path string for a ring sector (area between r1 and r2).
+ * Creates an arc segment for use in the circle of fifths visualization.
+ * @param cx Center X coordinate
+ * @param cy Center Y coordinate
+ * @param r1 Inner radius of the ring sector
+ * @param r2 Outer radius of the ring sector
+ * @param startAngle Starting angle in degrees
+ * @param endAngle Ending angle in degrees
+ * @returns SVG path string describing the arc sector
+ */
 function describeArc(
   cx: number,
   cy: number,

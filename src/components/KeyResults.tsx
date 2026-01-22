@@ -14,9 +14,10 @@ export interface KeyResultsProps {
 }
 
 /**
- * Formats the key name as "C major" or "A minor"
- * @param key The key object
- * @returns Formatted key name
+ * Formats the key name as "C major" or "A minor".
+ * Uses the tonic display label for proper enharmonic spelling.
+ * @param key The key object containing tonic and mode
+ * @returns Formatted key name string (e.g., "C major", "A minor")
  */
 function formatKeyName(key: Key): string {
   const label = getTonicDisplayLabel(key.tonic, key.mode);
@@ -24,8 +25,14 @@ function formatKeyName(key: Key): string {
 }
 
 /**
- * Displays a list of matching keys and available diatonic chords
+ * Displays a list of matching keys and available diatonic chords.
+ * Shows all keys and their diatonic triads when no chords are selected.
+ * When chords are selected, shows only keys that contain all selected chords
+ * and highlights the available (non-selected) diatonic chords.
  * @param results Array of matching keys and their available chords
+ * @param selectedCount Number of chords currently selected
+ * @param selectedChords Array of currently selected chord objects
+ * @returns React component displaying key results
  */
 function KeyResults({
   results,
