@@ -87,7 +87,11 @@ export const ALLOWED_KEYS: Key[] = [
   },
 ];
 
-/** Return all allowed keys (shallow copy) */
+/**
+ * Return all allowed keys (shallow copy).
+ * Returns a copy of the 24 allowed diatonic keys (12 major Ionian + 12 minor Aeolian).
+ * @returns Array of all 24 allowed keys with their scales
+ */
 export function getAllAllowedKeys(): Key[] {
   return ALLOWED_KEYS.slice();
 }
@@ -128,10 +132,18 @@ export const MINOR_TONICS_ORDER: Note[] = [
   "D",
 ];
 
+/**
+ * Get the list of major (Ionian) tonics in circle of fifths order.
+ * @returns Array of 12 major tonics ordered for UI display
+ */
 export function getMajorTonics(): Note[] {
   return MAJOR_TONICS_ORDER.slice();
 }
 
+/**
+ * Get the list of minor (Aeolian) tonics in circle of fifths order.
+ * @returns Array of 12 minor tonics ordered for UI display
+ */
 export function getMinorTonics(): Note[] {
   return MINOR_TONICS_ORDER.slice();
 }
@@ -170,7 +182,14 @@ const TONIC_DISPLAY_MINOR: Record<string, string> = {
   D: "D",
 };
 
-/** Return the UI label for a tonic in the given mode. */
+/**
+ * Return the UI label for a tonic in the given mode.
+ * For major (Ionian) mode, may show enharmonic equivalents like "G♭/F#".
+ * For minor (Aeolian) mode, may show simplified spellings like "E♭" for "D#".
+ * @param tonic The note to display
+ * @param mode The musical mode (Ionian or Aeolian)
+ * @returns The formatted display label for the tonic
+ */
 export function getTonicDisplayLabel(
   tonic: Note,
   mode: "Ionian" | "Aeolian"

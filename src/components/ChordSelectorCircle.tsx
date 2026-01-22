@@ -14,11 +14,14 @@ export interface ChordSelectorCircleProps {
 }
 
 /**
- * Renders a circle of fifths for chord selection
+ * Renders a circle of fifths for chord selection.
+ * Displays diatonic chords as interactive buttons arranged in a circular pattern.
+ * Supports multiple rings for keys with more than 12 diatonic chords.
  * @param diatonicChords Array of diatonic chords for the selected key
  * @param selectedChords Array of currently selected chords
  * @param onSelect Callback when a chord is selected/deselected
  * @param onReset Callback to reset selection
+ * @returns React component displaying the chord selector circle
  */
 function ChordSelectorCircle({
   diatonicChords,

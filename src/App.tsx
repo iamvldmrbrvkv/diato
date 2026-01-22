@@ -113,7 +113,10 @@ export function App() {
     [activeSelected]
   );
 
-  /** Reset chord selection for the active mode only. */
+  /**
+   * Reset chord selection for the active mode only.
+   * Clears either the By-Key or Free selection array depending on current view mode.
+   */
   const handleReset = () => {
     if (viewMode === "byKey") setSelectedByKey([]);
     else setSelectedFree([]);
@@ -123,6 +126,8 @@ export function App() {
    * Toggle a chord in the By-Key selection set and return whether it became selected.
    * This mirrors the `onToggle` contract used by `ChordTable` so callers can
    * decide to play audio only when a chord was newly selected.
+   * @param chord The chord to toggle in the selection
+   * @returns True if the chord was selected (added), false if it was deselected (removed)
    */
   const handleToggleByKey = (chord: Chord) => {
     let becameSelected = false;
@@ -142,7 +147,10 @@ export function App() {
     return becameSelected;
   };
 
-  /** Cycle theme preference: system -> light -> dark -> system. */
+  /**
+   * Cycle theme preference: system -> light -> dark -> system.
+   * Updates the theme preference state which persists to localStorage via useEffect.
+   */
   const handleCycleClick = () => {
     setThemePref((p) => {
       if (p === "system") return "light";

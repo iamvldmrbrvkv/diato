@@ -16,6 +16,12 @@ export interface ChordTableProps {
 /**
  * Simple responsive table/grid for selecting chords in Free mode.
  * Shows triads as tappable chips with root+quality and a reset button.
+ * Plays audio feedback when a chord is selected.
+ * @param triads Array of all available triads to display
+ * @param selectedChords Array of currently selected chords
+ * @param onToggle Toggle callback: should return true if chord is selected after toggle
+ * @param onReset Callback to reset all selections
+ * @returns React component displaying the chord table
  */
 export function ChordTable({
   triads,

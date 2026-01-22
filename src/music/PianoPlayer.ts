@@ -28,6 +28,13 @@ declare global {
   }
 }
 
+/**
+ * Normalize a note name to include octave information.
+ * Converts musical flat (♭) and sharp (♯) symbols to ASCII equivalents.
+ * If the note doesn't have an octave number, appends "4" (middle octave).
+ * @param note Note name to normalize (e.g., "C", "F#", "B♭")
+ * @returns Normalized note with octave (e.g., "C4", "F#4", "Bb4")
+ */
 function normalizeNote(note: string) {
   const n = note.replace(/\u266d/g, "b").replace(/\u266f/g, "#");
 
@@ -49,6 +56,10 @@ class PianoPlayerClass {
   private loading: Promise<void> | null = null;
   private muted = false;
 
+  /**
+   * Clear all scheduled sequence timers and increment the sequence token.
+   * This prevents any pending scheduled chord playback from starting.
+   */
   private clearSequenceTimers() {
     for (const t of this.sequenceTimers) {
       try {
@@ -77,6 +88,12 @@ class PianoPlayerClass {
     }
   }
 
+  /**
+   * Ensure the AudioContext and piano instrument are loaded and ready.
+   * Initializes the AudioContext, creates the master gain node, sets up
+   * MediaStream bridge for iOS Safari, and loads the acoustic_grand_piano soundfont.
+   * @returns Promise that resolves when initialization is complete
+   */
   async ensureLoaded() {
     if (this.instrument && this.audioCtx) return;
     if (this.loading) return this.loading;
@@ -113,6 +130,8 @@ class PianoPlayerClass {
 
   /**
    * Return whether the player currently believes it is actively playing.
+   * Checks if there are active playing nodes or pending sequence timers.
+   * @returns True if playing or has pending playback, false otherwise
    */
   private isActuallyPlaying() {
     return this.playingNodes.length > 0 || this.sequenceTimers.length > 0;
@@ -138,6 +157,9 @@ class PianoPlayerClass {
 
   /**
    * Suspend the AudioContext proactively when hidden and the player is idle.
+   * This helps avoid mobile browsers (especially Safari) from killing the context
+   * when it's running but not producing sound.
+   * @returns Promise that resolves when suspension is complete
    */
   private async suspendAudioContext() {
     try {
@@ -155,6 +177,8 @@ class PianoPlayerClass {
   /**
    * Try to resume the existing AudioContext. If resume does not result in a
    * running context, close and recreate the context and reload the instrument.
+   * This handles cases where mobile browsers have suspended or closed the AudioContext.
+   * @returns Promise that resolves when resume or recreation is complete
    */
   private async resumeOrRecreateAudioContext() {
     try {
@@ -230,7 +254,11 @@ class PianoPlayerClass {
 
   /**
    * Play a chord (array of note names like C, F#, B♭). Polyphonic: all notes start together.
-   * durationMs: how long to let the sample play (defaults to 1400ms)
+   * Stops any currently playing sounds before starting the new chord.
+   * @param noteNames Array of note names to play simultaneously
+   * @param durationMs How long to let the sample play (defaults to 1400ms)
+   * @param fadeMs Fade-out duration in milliseconds when stopping previous sounds (defaults to 60ms)
+   * @returns Promise that resolves when playback is initiated
    */
   async playChord(noteNames: string[], durationMs = 1400, fadeMs = 60) {
     if (this.muted) return;
@@ -280,7 +308,11 @@ class PianoPlayerClass {
 
   /**
    * Play a sequence of chords (array of note arrays), one after another.
-   * Each chord plays for `perChordMs` milliseconds.
+   * Each chord plays for `perChordMs` milliseconds with a short gap between chords.
+   * @param chords Array of chord arrays, where each chord is an array of note names
+   * @param perChordMs Duration in milliseconds for each chord (defaults to 900ms)
+   * @param fadeMs Fade-out duration in milliseconds when stopping previous sounds (defaults to 60ms)
+   * @returns Promise that resolves when the sequence is scheduled
    */
   async playSequence(chords: string[][], perChordMs = 900, fadeMs = 60) {
     if (this.muted) return;
@@ -304,6 +336,7 @@ class PianoPlayerClass {
    * Cancel any pending scheduled sequence callbacks and stop currently
    * playing notes with an optional short fade.
    * This stops future scheduled chords from starting after cancellation.
+   * @param fadeMs Fade-out duration in milliseconds (defaults to 60ms)
    */
   stopSequence(fadeMs = 60) {
     try {
@@ -318,7 +351,11 @@ class PianoPlayerClass {
     }
   }
 
-  /** Stop all currently playing notes with a short fade-out */
+  /**
+   * Stop all currently playing notes with a short fade-out.
+   * Uses gain ramping to avoid audio clicks and pops.
+   * @param fadeMs Fade-out duration in milliseconds (defaults to 60ms)
+   */
   stopAll(fadeMs = 60) {
     if (!this.masterGain || !this.audioCtx) return;
     const now = this.audioCtx.currentTime;
@@ -350,8 +387,11 @@ class PianoPlayerClass {
     }, fadeMs + 8);
   }
 
-  /** Mute or unmute the player. When muted, playback is suppressed and current
-   * sounds are stopped. */
+  /**
+   * Mute or unmute the player. When muted, playback is suppressed and current
+   * sounds are stopped immediately.
+   * @param v True to mute, false to unmute
+   */
   setMuted(v: boolean) {
     this.muted = !!v;
     if (this.muted) {
